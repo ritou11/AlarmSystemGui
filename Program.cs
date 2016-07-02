@@ -15,7 +15,7 @@ namespace alarm
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Alarm());
+            Application.Run(new Alarm_Form());
         }
     }
 }

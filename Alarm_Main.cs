@@ -15,18 +15,15 @@ using System.Threading;
 
 namespace alarm
 {
-    public partial class Alarm : Form
+    public partial class Alarm_Form : Form
     {
         SerialPort sp1 = new SerialPort();
         int T_count = 0;
         int R_count = 0;
-        byte[] UID = new byte[8] { 00, 00, 00, 00, 00, 00, 00, 00 };
-        byte CmdNum = 0;
-        int UID_Type = 4;
         List<byte> lstRecv=new List<byte>();
         ManualResetEvent eventX=new ManualResetEvent(false);
         static byte wait_for_flag=0x00;
-
+        private bool showConsole=true;
         public bool sendCommand(string cmd)
         {
             sp1.Encoding = System.Text.Encoding.Default;
@@ -127,7 +124,7 @@ namespace alarm
             return true;
         }
 
-        public Alarm()
+        public Alarm_Form()
         {
             InitializeComponent();
         }
@@ -267,15 +264,6 @@ namespace alarm
             sp1.DtrEnable = true;
             sp1.RtsEnable = true;
 
-            radioButtonKeyB.Checked = false;
-            radioButtonKeyA.Checked = true;
-
-            labelUID.Text = "00 00 00 00";
-
-            // sp1.ReadTimeout = 200000000;
-            //设置数据读取超时为1秒
-            //  sp1.ReadTimeout = 1000;
-
             sp1.Close();
         }
 
@@ -309,200 +297,16 @@ namespace alarm
                     txtBoxRxtData.Select(txtBoxRxtData.Text.Length - 1, 0);
                     txtBoxRxtData.ScrollToCaret();
 
-                    int usedList = 0;
-                    foreach(var s in Command.getFrame(lstRecv.ToArray()))
-                    {
-                        switch (s.type)
-                        {
-                            case 0x4B:
-                                labelUID.Text = "";
-                                for (int i = 0; i < s.cont[5]; i++)
-                                {
-                                    UID[i] = s.cont[i + 6];
-                                    labelUID.Text += UID[i].ToString("X2")+" ";
-                                }
-                                break;
-                            case 0x87:
-                                string str="";
-                                for (int i = 1; i < s.cont.Length; i++) str+=(char)s.cont[i];
-                                txtBoxRxtData.AppendText("\r\nReceived Data As a Target:---<"+str+">---;\r\n");
-                                break;
-                            case 0x15:
-                                if (s.CheckSelf())
-                                {
-                                    labelWakeUp.Text = "唤醒成功";
-                                    labelWakeUp.ForeColor = Color.Green;
-                                }
-                                else
-                                {
-                                    labelWakeUp.Text = "唤醒失败";
-                                    labelWakeUp.ForeColor = Color.Red;
-                                }
-                                break;
-                            case 0x41:
-                                if (CmdNum == 0x01)
-                                {
-                                    if (s.CheckSelf() && s.cont[0] == 0x00)
-                                    {
-                                        labelVerifyKeyA.ForeColor = Color.Green;
-                                        labelVerifyKeyA.Text = "验证成功";
-                                    }
-                                    else
-                                    {
-                                        labelVerifyKeyA.ForeColor = Color.Red;
-                                        labelVerifyKeyA.Text = "验证失败";
-                                    }                                    
-                                }
-                                else if (CmdNum == 0x02)
-                                {
-                                    if (s.CheckSelf() && s.cont[0] == 0x00)
-                                    {
-                                        labelReadData.ForeColor = Color.Green;
-                                        foreach(var b in s.cont) labelReadData.Text +=b.ToString("X2")+" ";
-                                    }
-                                    else
-                                    {
-                                        labelReadData.ForeColor = Color.Red;
-                                        labelReadData.Text = "读取失败";
-                                    }
-                                }
-                                break;
-                        }
-                        if (s.type == wait_for_flag)
-                        {
-                            wait_for_flag = 0x00;
-                            eventX.Set();
-                        }
-                        usedList += s.len + 7;
-                    }
+                    int usedLength = 0;          
+                      
+                    //TODO...
 
                     for (int i = 0; i < lstRecv.Count - 3; i++)
                         if (lstRecv[i] == 0x00 && lstRecv[i + 1] == 0x00 && lstRecv[i + 2] == 0xFF && lstRecv[i+3]!=0)
                         {
-                            lstRecv.RemoveRange(i,usedList);
+                            lstRecv.RemoveRange(i,usedLength);
                             break;
                         }
-                    
-                    return;
-
-                    for (int i = 0; i < receivedData.Length - 2; i++)
-                    {
-                        if (receivedData[i] == 0xD5)
-                        {
-                            if (receivedData[i+1] == 0x4B)
-                            {
-                                //UID[0] = receivedData[i + 8];
-                                //UID[1] = receivedData[i + 9];
-                                //UID[2] = receivedData[i + 10];
-                                //UID[3] = receivedData[i + 11];
-                                //labelUID.Text = UID[0].ToString("X2") + " " + UID[1].ToString("X2") + " " + UID[2].ToString("X2") + " " + UID[3].ToString("X2");
-                                //if (receivedData[i + 7] == 0x07)
-                                //{
-                                //    UID[4] = receivedData[i + 12];
-                                //    UID[5] = receivedData[i + 13];
-                                //    UID[6] = receivedData[i + 14];
-                                //    UID_Type = 7;
-                                //    labelUID.Text += " " + UID[4].ToString("X2") + " " + UID[5].ToString("X2") + " " + UID[6].ToString("X2");
-                                    
-                                //    buttonVerifyKeyA.Enabled = false;
-                                //    labelwritelength.Text = "每次输入4个字节数据";
-                                //    labelTagType.Text = "Mifare UltraLight";
-                                //    int wlen = textBoxWritedata.Text.Length;
-                                //    if (textBoxWritedata.Text.Length > 13)
-                                //    {
-                                //        textBoxWritedata.Text = "00 01 02 03";
-                                //    }
-                                //}
-                                //else
-                                //{
-                                //    UID_Type = 4;
-                                //    labelTagType.Text = "Mifare S50";
-                                //    buttonVerifyKeyA.Enabled = true;
-                                //    textBoxWritedata.Text = "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F";
-                                //    labelwritelength.Text = "每次输入16字节数据";
-                                //}
-
-                            }
-                            else if (CmdNum == 2)
-                            {
-                                if (receivedData[i + 2] == 0x00)
-                                {
-                                    labelVerifyKeyA.Text = "验证成功";
-                                    labelVerifyKeyA.ForeColor = Color.Green;
-                                }
-                                else
-                                {
-                                    labelVerifyKeyA.Text = "验证失败";
-                                    labelVerifyKeyA.ForeColor = Color.Red;
-                                    MessageBox.Show("1、未获取UID号，请先获取UID号 \r\n\r\n2、此卡已经修改了读写权限，请更换验证方式试一下", "错误提示：");
-                                }
-                            }
-                            else if (CmdNum == 3)
-                            {
-                                if (receivedData[i + 2] == 0x00)
-                                {
-                                    labelWrite.Text = "写入成功";
-                                    labelWrite.ForeColor = Color.Green;
-                                }
-                                else
-                                {
-                                    labelWrite.Text = "写入失败";
-                                    labelWrite.ForeColor = Color.Red;
-                                }
-
-                            }
-                            else if (CmdNum == 4)
-                            {
-                                labelReadData.Text = "";
-                                byte checkcode = 0;
-                                byte temp = 0;
-                                for (int m = i; m < receivedData.Length - 2; m++)
-                                {
-                                    temp += receivedData[m];
-                                }
-                                checkcode = (byte)(0x100 - temp);
-                                if (receivedData[receivedData.Length - 2] == checkcode)
-                                {
-                                    labelRead.Text = "读取成功";
-                                    labelRead.ForeColor = Color.Green;
-                                    if (UID_Type == 4)
-                                    {
-                                        for (int j = 0; j < 16; j++)
-                                        {
-                                            labelReadData.Text += receivedData[i + 3 + j].ToString("X2") + " ";
-                                        }
-                                    }
-                                    else if (UID_Type == 7)
-                                    {
-                                        for (int j = 0; j < 4; j++)
-                                        {
-                                            labelReadData.Text += receivedData[i + 11 + j].ToString("X2") + " ";
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    labelRead.Text = "读取失败";
-                                    labelRead.ForeColor = Color.Red;
-                                    labelReadData.Text = "";
-                                }
-
-                            }
-                            //else if (CmdNum == 0)
-                            //{
-                            //    if (receivedData[i + 1] == 0x15)
-                            //    {
-
-                            //    }
-                            //    else
-                            //    {
-                            //        //labelWakeUp.Text = "唤醒失败";
-                            //        //labelWakeUp.ForeColor = Color.Red;
-                            //    }
-                            //}
-                        }
-                    }
-                                        
                 }
                 catch (System.Exception ex)
                 {
@@ -513,63 +317,6 @@ namespace alarm
             {
                 MessageBox.Show("请打开某个串口", "错误提示");
             }
-        }
-
-        private void Initiator()
-        {
-            
-        }
-        public void Target()
-        {
-            sendCommand(Command.Wakeup,true);            
-            eventX.WaitOne(Timeout.Infinite,true);
-            Thread.Sleep(100);          
-            
-            sendCommand(Command.TargetInit,true);
-            eventX.WaitOne(Timeout.Infinite, true);
-
-            sendCommand(Command.TgGetData,true);
-            eventX.WaitOne(Timeout.Infinite, true);
-            Thread.Sleep(100);
-            
-            byte[] cmd;
-            byte[] bytesToSend = Encoding.Default.GetBytes(txtSend.Text);
-            byte[] data = new byte[bytesToSend.Length + 1];
-            data[0] = 0x8E;
-            Array.Copy(bytesToSend, 0, data, 1, bytesToSend.Length);
-            Command.calcCommand(out cmd, data);
-            sendCommand(cmd);
-            eventX.WaitOne(Timeout.Infinite, true);
-        }
-        private void buttonWakeUp_Click(object sender, EventArgs e)
-        {
-            CmdNum = 0;
-
-            if (checkBoxByTimeSend.Checked)  timerSend.Enabled = true;
-            else timerSend.Enabled = false;
-
-            if (!sp1.IsOpen) //如果没打开
-            {
-                MessageBox.Show("请先打开串口！", "Error");
-                return;
-            }
-
-            string strSend = Command.Wakeup;
-            byte[] byteBuffer;
-            if (!Command.dealCommand(out byteBuffer, strSend))
-            {
-                MessageBox.Show("字节越界，请逐个字节输入！", "Error");
-                timerSend.Enabled = false;
-                return;
-            }
-
-            sp1.Write(byteBuffer, 0, byteBuffer.Length);
-
-            txtBoxRxtData.Text += "\r\n" + "PC->PN532:" + "\r\n" + "    " + strSend;
-
-            T_count += byteBuffer.Length;
-            tsSend.Text = "T：" + T_count.ToString() + "   ";
-            tsRec.Text = "R：" + R_count.ToString() + "   ";
         }
 
         private void buttonOpenOrCloseCom_Click(object sender, EventArgs e)
@@ -681,6 +428,7 @@ namespace alarm
         private void buttonCleanWindows_Click(object sender, EventArgs e)
         {
             txtBoxRxtData.Text = "";
+            T_count = R_count = 0;
         }
         //关闭时事件
 
@@ -716,10 +464,6 @@ namespace alarm
             {
                 int isecond = int.Parse(strSecond);//Interval以微秒为单位
                 timerSend.Interval = isecond;
-                if (timerSend.Enabled == true)
-                {
-                    buttonWakeUp.PerformClick();
-                }
             }
             catch (System.Exception)
             {
@@ -744,152 +488,31 @@ namespace alarm
             }
         }
 
-        private void buttonVerifyKeyA_Click(object sender, EventArgs e)
-        {
-            byte loc=0x02;
-            sendCommand(Command.InDataExchange(0x01,"60",loc.ToString("X2"),"FF FF FF FF FF FF",UID[0].ToString("X2"), UID[1].ToString("X2"), UID[2].ToString("X2"), UID[3].ToString("X2")));
-        }
-
-        private void buttonWrite_Click(object sender, EventArgs e)
-        {
-            sp1.Encoding = System.Text.Encoding.Default;
-            CmdNum = 3;
-
-            if (checkBoxByTimeSend.Checked) timerSend.Enabled = true;
-            else timerSend.Enabled = false;
-
-            if (!sp1.IsOpen) //如果没打开
-            {
-                MessageBox.Show("请先打开串口！", "Error");
-                return;
-            }
-
-            if (checkBoxkeywrite.Checked == true)
-            {
-                MessageBox.Show("请谨慎修改，存储区读写权限及读写密码； \r\n \r\n后果严重，暂不开放此权限；\r\n  \r\n若用到此项功能，请联系作者。", "警告：");
-            }
-
-            // String strSend = "00 00 FF 15 EB D4 40 01 A0 02 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F D1 00"; 
-            String strSend;
-            if (UID_Type == 4)
-            {
-                strSend = Command.getStrWriteData4(textBoxWritedata.Text);
-            }
-            else if (UID_Type == 7)
-            {
-                strSend = Command.getStrWriteData7(textBoxWritedata.Text);
-            }
-            else return;
-            
-            byte[] tmpByteBuffer;
-            if (!Command.dealCommand(out tmpByteBuffer,strSend))
-            {
-                MessageBox.Show("字节越界，请逐个字节输入！", "Error");
-                timerSend.Enabled = false;
-                return;
-            }
-            byte[] byteBuffer = new byte[tmpByteBuffer.Length+2];
-            for(int i = 0; i < tmpByteBuffer.Length; i++)
-            {
-                byteBuffer[i] = tmpByteBuffer[i];
-            }
-            byte temp = 0;
-            for (int i = 5; i < byteBuffer.Length - 2; i++)
-            {
-                temp += byteBuffer[i];
-            }
-            byteBuffer[byteBuffer.Length - 2] = (byte)(0x100 - temp);
-            byteBuffer[byteBuffer.Length - 1] = (byte)(0x00);
-
-            sp1.Write(byteBuffer, 0, byteBuffer.Length);
-
-            txtBoxRxtData.Text += "\r\n" + "PC->PN532:" + "\r\n" + "    " + strSend + " " + byteBuffer[byteBuffer.Length - 2].ToString("X") + " " + byteBuffer[byteBuffer.Length - 1].ToString("X");
-            T_count += byteBuffer.Length;
-            tsSend.Text = "T：" + T_count.ToString() + "   ";
-            tsRec.Text = "R：" + R_count.ToString() + "   ";
-        }
-
-        private void buttonRead_Click(object sender, EventArgs e)
-        {
-            sendCommand(Command.ReadCard);
-        }
-
-        private void buttonGetUID_Click(object sender, EventArgs e)
-        {
-            sp1.Encoding = System.Text.Encoding.Default;
-            CmdNum = 1;
-
-            if (checkBoxByTimeSend.Checked) timerSend.Enabled = true;
-            else timerSend.Enabled = false;
-
-            if (!sp1.IsOpen) //如果没打开
-            {
-                MessageBox.Show("请先打开串口！", "Error");
-                return;
-            }
-
-            String strSend = Command.ReadUID;
-            byte[] byteBuffer;
-            if (!Command.dealCommand(out byteBuffer, strSend))
-            {
-                MessageBox.Show("字节越界，请逐个字节输入！", "Error");
-                timerSend.Enabled = false;
-                return;
-            }
-            sp1.Write(byteBuffer, 0, byteBuffer.Length);
-
-            txtBoxRxtData.Text += "\r\n" + "PC->PN532:" + "\r\n" + "    " + strSend;
-            T_count += byteBuffer.Length;
-            tsSend.Text = "T：" + T_count.ToString() + "   ";
-            tsRec.Text = "R：" + R_count.ToString() + "   ";
-        }
-
-        private void radioButtonKeyB_Click(object sender, EventArgs e)
-        {
-            radioButtonKeyA.Checked = false;
-            radioButtonKeyB.Checked = true;
-        }
-
-        private void radioButtonKeyA_Click(object sender, EventArgs e)
-        {
-            radioButtonKeyB.Checked = false;
-            radioButtonKeyA.Checked = true;
-        }
-
         private void btnSend_Click(object sender, EventArgs e)
         {
             byte[] cmd;
             Command.calcCommand(out cmd,txtSend.Text);
             sendCommand(cmd);
         }
-        
-        private void button3_Click(object sender, EventArgs e)
+        private void lbState_Click(object sender, EventArgs e)
         {
-            sendCommand(Command.TgGetData);
-            MessageBox.Show("hhh");
-
-            byte[] cmd;
-            byte[] bytesToSend = Encoding.Default.GetBytes(txtSend.Text);
-            byte[] data = new byte[bytesToSend.Length + 1];
-            data[0] = 0x8E;
-            Array.Copy(bytesToSend, 0, data, 1, bytesToSend.Length);
-            Command.calcCommand(out cmd, data);
-            sendCommand(cmd);
-
+            if (showConsole)
+            {
+                this.Size = new Size(386,311);
+                tabControl1.Visible = false;
+                showConsole = false;
+            }
+            else
+            {
+                this.Size = new Size(660, 311);
+                tabControl1.Visible = true;
+                showConsole = true;
+            }
         }
 
-        private void btnTarget_Click(object sender, EventArgs e)
+        private void btnClose_Click(object sender, EventArgs e)
         {
-            Thread threadTg = new Thread(new ThreadStart(Target));
-            threadTg.IsBackground = true;
-            threadTg.Start();
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            byte[] cmd;
-            Command.dealCommand(out cmd,txtSend.Text);
-            sendCommand(cmd);
+            this.Close();
         }
     }
 }

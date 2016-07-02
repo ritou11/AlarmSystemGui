@@ -49,6 +49,7 @@ namespace alarm
         public static string TgGetData = "00 00 ff 02 fe d4 86 a6 00";
         public static string TgSetData = "00 00 FF 08 F8 D4 8E 74 61 72 67 65 74 17 00";
 
+        /*Translate string hex into bytes hex*/
         public static bool dealCommand(out byte[] byteBuffer,params string[] cmd)
         {
             StringBuilder strSend = new StringBuilder();
@@ -83,7 +84,6 @@ namespace alarm
                 else
                 {
                     decNum = Convert.ToInt32(strArray[i], 16);
-
                     try
                     {
                         byteBuffer[j] = Convert.ToByte(decNum);
@@ -97,6 +97,7 @@ namespace alarm
             }
             return true;
         }
+        /*Constructure a piece of command*/
         public static void calcCommand(out byte[] byteBuffer,params string[] content)
         {
             StringBuilder strSend=new StringBuilder();
