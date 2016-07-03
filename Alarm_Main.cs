@@ -24,6 +24,10 @@ namespace alarm
         ManualResetEvent eventX=new ManualResetEvent(false);
         static byte wait_for_flag=0x00;
         private bool showConsole=true;
+        private bool conn= false;
+        AlarmStatus alas=new AlarmStatus();
+
+
         public bool sendCommand(string cmd)
         {
             sp1.Encoding = System.Text.Encoding.Default;
@@ -127,6 +131,23 @@ namespace alarm
         public Alarm_Form()
         {
             InitializeComponent();
+            alas.Update(0, 0, false, conn, !conn);
+            UpdateLbState();
+        }
+
+        public void UpdateLbState()
+        {
+            //TODO:　More actions when state changes e.g. color/alert/email
+            switch(alas.AssertState())
+            {
+                case AlarmStatus.State.S_DISABLED: lbState.Text = "未开启"; break;
+                case AlarmStatus.State.S_A1: lbState.Text = "一级警报";break;
+                case AlarmStatus.State.S_A2: lbState.Text = "二级警报"; break;
+                case AlarmStatus.State.S_A3: lbState.Text = "三级警报"; break;
+                case AlarmStatus.State.S_A4: lbState.Text = "四级警报"; break;
+                case AlarmStatus.State.S_NORM: lbState.Text = "安全"; break;
+                case AlarmStatus.State.S_ERR: lbState.Text = "错误"; break;
+            }
         }
 
         private void ListPorts()
@@ -291,22 +312,24 @@ namespace alarm
                     {
                         strRcv.Append(receivedData[i].ToString("X2") + " ");  //16进制显示
                     }
-                    txtBoxRxtData.AppendText("\r\n" + "PN532->PC:" + "\r\n" + "    " + strRcv.ToString());
+                    txtBoxRxtData.AppendText("\r\n" + "FPGA->PC:" + "\r\n" + "    " + strRcv.ToString());
 
                     txtBoxRxtData.Focus();
                     txtBoxRxtData.Select(txtBoxRxtData.Text.Length - 1, 0);
                     txtBoxRxtData.ScrollToCaret();
 
-                    int usedLength = 0;          
-                      
-                    //TODO...
-
-                    for (int i = 0; i < lstRecv.Count - 3; i++)
-                        if (lstRecv[i] == 0x00 && lstRecv[i + 1] == 0x00 && lstRecv[i + 2] == 0xFF && lstRecv[i+3]!=0)
-                        {
-                            lstRecv.RemoveRange(i,usedLength);
-                            break;
-                        }
+                    byte[] cur_buffer=lstRecv.ToArray();
+                    int removed = 0;
+                    foreach(var frm in Command.getFrame(cur_buffer))
+                    {
+                        lstRecv.RemoveRange(frm.start_i-removed,8);
+                        removed += 8;
+                        lbIllum.Text = frm.illum.ToString();
+                        lbDist.Text = frm.dist.ToString();
+                        lbAcl2.Text = frm.acl2.ToString();
+                        alas.Update(frm.dist,frm.illum,frm.acl2,conn,false);
+                        UpdateLbState();
+                    }
                 }
                 catch (System.Exception ex)
                 {
@@ -395,6 +418,7 @@ namespace alarm
 
                     sp1.Open();     //打开串口
                     buttonOpenOrCloseCom.Text = "关闭串口";
+                    conn = true;
                 }
                 catch (System.Exception ex)
                 {
@@ -422,7 +446,10 @@ namespace alarm
                 sp1.Close();                    //关闭串口
                 buttonOpenOrCloseCom.Text = "打开串口";
                 timerSend.Enabled = false;         //关闭计时器
+                conn = false;
             }
+            alas.Update(0,0,false,conn,!conn);
+            UpdateLbState();
         }
 
         private void buttonCleanWindows_Click(object sender, EventArgs e)
@@ -494,6 +521,7 @@ namespace alarm
             Command.calcCommand(out cmd,txtSend.Text);
             sendCommand(cmd);
         }
+
         private void lbState_Click(object sender, EventArgs e)
         {
             if (showConsole)

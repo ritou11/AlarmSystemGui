@@ -14,8 +14,7 @@ namespace INIFILE
             G_BAUDRATE = _file.ReadString("CONFIG", "BaudRate", "115200");    //读数据，下同
             G_DATABITS = _file.ReadString("CONFIG", "DataBits", "8");
             G_STOP = _file.ReadString("CONFIG", "StopBits", "1");
-            G_PARITY = _file.ReadString("CONFIG", "Parity", "NONE");
-         
+            G_PARITY = _file.ReadString("CONFIG", "Parity", "NONE");         
         }
 
         public static void SaveProfile()

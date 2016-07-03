@@ -6,49 +6,66 @@ using System.IO.Ports;
 
 namespace alarm
 {
-    public class AckFrame
+    public class AlarmStatus
     {
-        public byte len;
-        public byte type;
-        public byte[] cont;
-        public byte lcs, rcs;
-        public AckFrame() { len = type = 0; }
-        public AckFrame(byte[] src)
+        //TODO: Find suitable parameters
+        const int MaxDist = 5;
+        const byte MaxIllum = 5;
+
+        public enum State
         {
-            if ((src[0] + src[1] & 0xFF) != 0) return;
-            len = src[0];
-            lcs = src[1];
-            if (src.Length < len + 4)
-            {
-                len = 0;
-                return;
-            }
-            if (src[2] != 0xD5) return;
-            type = src[3];
-            cont = src.Skip(4).Take(len - 2).ToArray();
-            rcs = src[len + 2];
+            S_DISABLED,
+            S_NORM,
+            S_A1,
+            S_A2,
+            S_A3,
+            S_A4,
+            S_ERR
         }
-        public bool CheckSelf()
+        // represent if the value is normal
+        private bool isConnected;
+        private bool isIllum;
+        private bool isDist;
+        private bool isAlc2;
+
+        private bool isDisabled;
+        public State AssertState()
         {
-            if (((len + lcs) & 0xFF) != 0) return false;
-            byte cc = (byte)(type + 0xD5);
-            foreach (byte b in cont) cc += b;
-            if (((cc + rcs) & 0xFF) != 0) return false;
-            return true;
+            //TODO: More complicated rules
+            if (isDisabled) return State.S_DISABLED;
+            if (!isConnected) return State.S_A4;
+            if (!isAlc2) return State.S_A3;
+            if (!isIllum) return State.S_A2;
+            if (!isDist) return State.S_A1;
+            return State.S_NORM;
+        }
+        public State Update(int dist, byte illum, bool acl2, bool conn, bool disabled)
+        {
+            isDist = (dist < MaxDist);
+            isIllum = (illum < MaxIllum);
+            isConnected = conn;
+            isAlc2 = !acl2;
+            isDisabled = disabled;
+            return AssertState();
+        }
+    }
+    public class AlarmFrame
+    {
+        public int start_i;
+        public int dist;
+        public byte illum;
+        public bool acl2;
+        public AlarmFrame() { }
+        public AlarmFrame(int DIST,byte ILLUM, bool ACL2, int I)
+        {
+            dist = DIST;
+            illum = ILLUM;
+            acl2 = ACL2;
+            start_i = I;
         }
     }
     public static class Command
     {
-        public static string Wakeup = "55 55 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF 03 FD D4 14 01 17 00";
-        public static string ReadUID = "00 00 FF 04 FC D4 4A 01 00 E1 00";
-        public static string ReadCard = "libnfc 1.7.1 write";
-        public static string TargetInit = "00 00 FF 2B D5 D4 8C 02 08 00 12 34 56 40 01 FE 12 34 56 78 90 12 C0 C1 C2 C3 C4 C5 C6 C7 0F AB 12 34 56 78 9A BC DE FF 00 00 04 12 34 56 78 00 D0 00";
-        public static string SetParameters = "00 00 FF 03 FD D4 12 14 06 00";
-        public static string CheckCommunication = "00 00 FF 09 F7 D4 00 00 6C 69 62 6E 66 63 BE 00";
-        public static string CheckVersion = "00 00 FF 02 FE D4 02 2A 00";
-        public static string TgGetData = "00 00 ff 02 fe d4 86 a6 00";
-        public static string TgSetData = "00 00 FF 08 F8 D4 8E 74 61 72 67 65 74 17 00";
-
         /*Translate string hex into bytes hex*/
         public static bool dealCommand(out byte[] byteBuffer,params string[] cmd)
         {
@@ -127,63 +144,21 @@ namespace alarm
             byteBuffer[byteBuffer.Length-2]=(byte)(0x100- sum);
             byteBuffer[byteBuffer.Length - 1] = 0;
         }
-        public static void calcCommand(out byte[] byteBuffer, byte[] tmpBuffer)
+
+        public static IEnumerable<AlarmFrame> getFrame(byte[] src)
         {
-            byteBuffer = new byte[tmpBuffer.Length + 8];//00 00 FF LEN LCS D4 ....... DCS 00
-            byteBuffer[0] = 0;
-            byteBuffer[1] = 0;
-            byteBuffer[2] = 0xFF;
-            byteBuffer[3] = (byte)(tmpBuffer.Length + 1);
-            byteBuffer[4] = (byte)(0x100 - byteBuffer[3]);
-            byteBuffer[5] = 0xD4;
-            for (int i = 6; i < byteBuffer.Length - 2; i++)
-            {
-                byteBuffer[i] = tmpBuffer[i - 6];
-            }
-            byte sum = 0xD4;
-            foreach (byte b in tmpBuffer)
-            {
-                sum += b;
-            }
-            byteBuffer[byteBuffer.Length - 2] = (byte)(0x100 - sum);
-            byteBuffer[byteBuffer.Length - 1] = 0;
-        }
-        public static byte[] InDataExchange(byte Tg,byte[] DataIn) {
-            byte[] tmpBuffer = new byte[DataIn.Length+2];
-            tmpBuffer[0] = 0x40;
-            tmpBuffer[1] = Tg;
-            DataIn.CopyTo(tmpBuffer, 2);
-            byte[] re;
-            calcCommand(out re,tmpBuffer);
-            return re;
-        }
-        public static byte[] InDataExchange(byte Tg, params string[] cmd)
-        {
-            byte[] DataIn;
-            dealCommand(out DataIn,cmd);
-            byte[] tmpBuffer = new byte[DataIn.Length + 2];
-            tmpBuffer[0] = 0x40;
-            tmpBuffer[1] = Tg;
-            DataIn.CopyTo(tmpBuffer, 2);
-            byte[] re;
-            calcCommand(out re, tmpBuffer);
-            return re;
-        }
-        public static string getStrWriteData4(string data)
-        {
-            return "00 00 FF 15 EB D4 40 01 A0 02 " + data;
-        }
-        public static string getStrWriteData7(string data)
-        {
-            return "00 00 FF 09 F7 D4 40 01 A2 04 " + data;
-        }
-        public static IEnumerable<AckFrame> getFrame(byte[] src)
-        {
-            for(int i=0;i<src.Length-2;i++)
-                if (src[i] == 0x00 && src[i + 1] == 0x00 && src[i + 2] == 0xFF)
+            for (int i = 0; i < src.Length - 8; i++) if (src[i] == 0x5A)
                 {
-                    AckFrame ack = new AckFrame(src.Skip(i+3).ToArray());
-                    if(ack.len>0)  yield return ack;
+                    byte chk;
+                    chk = (byte)(src[i + 4] ^ src[i + 5] ^ src[i + 6]);
+                    if (chk == src[i + 7])
+                    {
+                        int dist = (src[i + 1] << 12) + (src[i + 2] << 8) + (src[i + 3] << 4) + src[i + 4];
+                        dist = dist * 40 * 170 / 1000000;
+                        byte illum = src[i + 5];
+                        bool acl2 = (src[i + 6] == 1);
+                        yield return new AlarmFrame(dist, illum, acl2, i);
+                    }
                 }
         }
     }
