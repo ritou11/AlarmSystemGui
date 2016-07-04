@@ -19,11 +19,14 @@ namespace AlarmSystem.BLL
 
     public delegate void UpdateEventHandler(AlarmingState state, Report report);
 
+    public delegate void ConnLostEventHandler(AlarmingState state);
+
     public delegate void ErrorEventHandler(Exception e);
 
     public class AlarmSystem
     {
         public event UpdateEventHandler Update;
+        public event ConnLostEventHandler ConnLost;
         public event ErrorEventHandler Error;
 
         public TimeSpan DefaultTimeout { get; set; }
@@ -63,6 +66,8 @@ namespace AlarmSystem.BLL
         }
         
         public Profile TheProfile { get; set; }
+
+        public bool IsOpen { get; private set; }
 
         private readonly AsyncSerialPort m_Port;
         private AlarmingState m_RealState;
@@ -113,12 +118,15 @@ namespace AlarmSystem.BLL
             m_Port.ClosePort += Port_Close;
             m_Port.PackageArrived += Port_Package;
             m_Port.ReadWriteError += Port_Error;
+
+            IsOpen = false;
         }
 
         private void Watchdog_Triggered(object sender, ElapsedEventArgs e)
         {
             var old = m_RealState;
             m_RealState |= AlarmingState.Level4;
+            ConnLost?.Invoke(m_State);
 
             if (ConnectivityEnabled &&
                 !old.HasFlag(AlarmingState.Level4) &&
@@ -211,21 +219,29 @@ namespace AlarmSystem.BLL
             Update?.Invoke(m_State, report);
         }
 
-        private void Port_Close(Exception e)
-        {
-            if (e == null)
-            {
-                m_State = AlarmingState.Unarmed;
-                return;
-            }
-            Error?.Invoke(e);
-        }
-
         private void Port_Open(Exception e)
         {
-            if (e == null)
+            if (e != null)
+            {
+                Error?.Invoke(e);
                 return;
-            Error?.Invoke(e);
+            }
+
+            IsOpen = true;
+            Update?.Invoke(m_State, null);
+        }
+
+        private void Port_Close(Exception e)
+        {
+            if (e != null)
+            {
+                Error?.Invoke(e);
+                return;
+            }
+
+            IsOpen = false;
+            m_State = AlarmingState.Unarmed;
+            Update?.Invoke(m_State, null);
         }
     }
 }

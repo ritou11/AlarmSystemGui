@@ -36,6 +36,7 @@
             this.btnIgnore = new System.Windows.Forms.Button();
             this.btnSettings = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.btnUnbuzz = new System.Windows.Forms.Button();
             this.lblConnValue = new System.Windows.Forms.Label();
             this.lblConn = new System.Windows.Forms.Label();
             this.lblShake = new System.Windows.Forms.Label();
@@ -45,10 +46,9 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.tslError = new System.Windows.Forms.ToolStripStatusLabel();
             this.tslState = new System.Windows.Forms.ToolStripStatusLabel();
-            this.btnUnbuzz = new System.Windows.Forms.Button();
             this.tabSettings = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.txtBoxRxtData = new System.Windows.Forms.TextBox();
+            this.txtLog = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
@@ -191,6 +191,19 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(740, 595);
             this.tableLayoutPanel1.TabIndex = 79;
             // 
+            // btnUnbuzz
+            // 
+            this.btnUnbuzz.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnUnbuzz.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnUnbuzz.Location = new System.Drawing.Point(4, 302);
+            this.btnUnbuzz.Margin = new System.Windows.Forms.Padding(4);
+            this.btnUnbuzz.Name = "btnUnbuzz";
+            this.btnUnbuzz.Size = new System.Drawing.Size(177, 90);
+            this.btnUnbuzz.TabIndex = 81;
+            this.btnUnbuzz.Text = "关闭蜂鸣器";
+            this.btnUnbuzz.UseVisualStyleBackColor = true;
+            this.btnUnbuzz.Click += new System.EventHandler(this.btnUnbuzz_Click);
+            // 
             // lblConnValue
             // 
             this.lblConnValue.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -291,19 +304,6 @@
             this.tslState.Spring = true;
             this.tslState.Text = "安全状态：正常";
             // 
-            // btnUnbuzz
-            // 
-            this.btnUnbuzz.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnUnbuzz.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnUnbuzz.Location = new System.Drawing.Point(4, 302);
-            this.btnUnbuzz.Margin = new System.Windows.Forms.Padding(4);
-            this.btnUnbuzz.Name = "btnUnbuzz";
-            this.btnUnbuzz.Size = new System.Drawing.Size(177, 90);
-            this.btnUnbuzz.TabIndex = 81;
-            this.btnUnbuzz.Text = "关闭蜂鸣器";
-            this.btnUnbuzz.UseVisualStyleBackColor = true;
-            this.btnUnbuzz.Click += new System.EventHandler(this.btnUnbuzz_Click);
-            // 
             // tabSettings
             // 
             this.tabSettings.Controls.Add(this.tabPage1);
@@ -319,26 +319,26 @@
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.txtBoxRxtData);
+            this.tabPage1.Controls.Add(this.txtLog);
             this.tabPage1.Location = new System.Drawing.Point(4, 33);
             this.tabPage1.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(4);
-            this.tabPage1.Size = new System.Drawing.Size(464, 558);
+            this.tabPage1.Size = new System.Drawing.Size(424, 558);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "日志";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // txtBoxRxtData
+            // txtLog
             // 
-            this.txtBoxRxtData.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtBoxRxtData.Location = new System.Drawing.Point(4, 4);
-            this.txtBoxRxtData.Margin = new System.Windows.Forms.Padding(4);
-            this.txtBoxRxtData.Multiline = true;
-            this.txtBoxRxtData.Name = "txtBoxRxtData";
-            this.txtBoxRxtData.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtBoxRxtData.Size = new System.Drawing.Size(456, 550);
-            this.txtBoxRxtData.TabIndex = 64;
+            this.txtLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtLog.Location = new System.Drawing.Point(4, 4);
+            this.txtLog.Margin = new System.Windows.Forms.Padding(4);
+            this.txtLog.Multiline = true;
+            this.txtLog.Name = "txtLog";
+            this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtLog.Size = new System.Drawing.Size(416, 550);
+            this.txtLog.TabIndex = 64;
             // 
             // tabPage2
             // 
@@ -405,6 +405,7 @@
             this.btnToggleCom.TabIndex = 24;
             this.btnToggleCom.Text = "打开串口";
             this.btnToggleCom.UseVisualStyleBackColor = true;
+            this.btnToggleCom.Click += new System.EventHandler(this.btnToggleCom_Click);
             // 
             // comboBoxParity
             // 
@@ -580,7 +581,7 @@
         private System.Windows.Forms.Button btnUnbuzz;
         private System.Windows.Forms.TabControl tabSettings;
         private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TextBox txtBoxRxtData;
+        private System.Windows.Forms.TextBox txtLog;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
         private System.Windows.Forms.Label label1;
