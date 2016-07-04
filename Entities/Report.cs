@@ -12,6 +12,8 @@ namespace AlarmSystem.Entities
 
         public DateTime TimeStamp { get; set; }
 
+        public bool IsBuzzerOn { get; set; }
+
         public byte[] RawBytes { get; set; }
     }
 }

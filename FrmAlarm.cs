@@ -1,314 +1,140 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.IO;
+using System.Globalization;
 using System.IO.Ports;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using System.Threading;
+using AlarmSystem.BLL;
+using AlarmSystem.DAL;
+using AlarmSystem.Entities;
 
 namespace AlarmSystem
 {
     public partial class FrmAlarm : Form
     {
-        SerialPort sp1 = new SerialPort();
-        List<byte> lstRecv = new List<byte>();
-        ManualResetEvent eventX = new ManualResetEvent(false);
-        static byte wait_for_flag = 0x00;
-        private bool showConsole = true;
-        private bool conn = false;
-        private int connchk = 0;
-        AlarmStatus alas = new AlarmStatus();
+        private readonly BLL.AlarmSystem m_Manager;
+        private bool m_ShowConsole = true;
 
         public FrmAlarm()
         {
             InitializeComponent();
-            alas.Update(0, 0, false, conn, !conn);
-            UpdateLbState();
-        }
 
-        public bool sendCommand(string cmd)
-        {
-            sp1.Encoding = System.Text.Encoding.Default;
-
-            if (!sp1.IsOpen) //如果没打开
-            {
-                MessageBox.Show("请先打开串口！", "Error");
-                return false;
-            }
-
-            var strSend = cmd;
-            byte[] byteBuffer;
-            if (!Command.dealCommand(out byteBuffer, strSend))
-            {
-                MessageBox.Show("字节越界，请逐个字节输入！", "Error");
-                return false;
-            }
-
-            sp1.Write(byteBuffer, 0, byteBuffer.Length);
-
-            txtBoxRxtData.AppendText("\r\n" + "PC->PN532:" + "\r\n" + "    " + strSend);
-
-            txtBoxRxtData.Focus();
-            txtBoxRxtData.Select(txtBoxRxtData.Text.Length - 1, 0);
-            txtBoxRxtData.ScrollToCaret();
-
-            T_count += byteBuffer.Length;
-            return true;
-        }
-        public bool sendCommand(string cmd, bool isWaiting)
-        {
-
-            if (!sp1.IsOpen)
-            {
-                MessageBox.Show("请先打开串口！", "Error");
-                return false;
-            }
-
-            var strSend = cmd;
-            byte[] byteBuffer;
-            if (!Command.dealCommand(out byteBuffer, strSend))
-            {
-                MessageBox.Show("字节越界，请逐个字节输入！", "Error");
-                return false;
-            }
-            if (isWaiting)
-            {
-                for (var i = 0; i < byteBuffer.Length - 1; i++)
-                    if (byteBuffer[i] == 0xD4)
-                        wait_for_flag = (byte)(byteBuffer[i + 1] + 1);
-                eventX.Reset();
-            }
-
-            sp1.Write(byteBuffer, 0, byteBuffer.Length);
-
-            txtBoxRxtData.AppendText("\r\n" + "PC->PN532:" + "\r\n" + "    " + strSend);
-
-            txtBoxRxtData.Focus();
-            txtBoxRxtData.Select(txtBoxRxtData.Text.Length - 1, 0);
-            txtBoxRxtData.ScrollToCaret();
-            
-            return true;
-        }
-        public bool sendCommand(byte[] byteBuffer)
-        {
-
-            if (!sp1.IsOpen)
-            {
-                MessageBox.Show("请先打开串口！", "Error");
-                return false;
-            }
-
-            sp1.Write(byteBuffer, 0, byteBuffer.Length);
-
-            txtBoxRxtData.AppendText("\r\n" + "PC->PN532:" + "\r\n" + "    ");
-            for (var i = 0; i < byteBuffer.Length; i++) txtBoxRxtData.AppendText(byteBuffer[i].ToString("X2") + " ");
-
-            txtBoxRxtData.Focus();
-            txtBoxRxtData.Select(txtBoxRxtData.Text.Length - 1, 0);
-            txtBoxRxtData.ScrollToCaret();
-            
-            return true;
-        }
-        public bool sendByte(byte tosend)
-        {
-
-            if (!sp1.IsOpen)
-            {
-                MessageBox.Show("请先打开串口！", "Error");
-                return false;
-            }
-
-            sp1.Write(new byte[] { tosend }, 0, 1);
-
-            txtBoxRxtData.AppendText("\r\n" + "PC->PN532:" + "\r\n" + "    ");
-            txtBoxRxtData.AppendText(tosend.ToString("X2") + " ");
-
-            txtBoxRxtData.Focus();
-            txtBoxRxtData.Select(txtBoxRxtData.Text.Length - 1, 0);
-            txtBoxRxtData.ScrollToCaret();
-            
-            return true;
-        }
-
-        public void UpdateLbState()
-        {
-            //TODO:　More actions when state changes e.g. color/alert/email
-            switch (alas.AssertState())
-            {
-                case AlarmStatus.State.S_DISABLED: lbState.Text = "未开启"; break;
-                case AlarmStatus.State.S_A1: lbState.Text = "一级警报"; break;
-                case AlarmStatus.State.S_A2: lbState.Text = "二级警报"; break;
-                case AlarmStatus.State.S_A3: lbState.Text = "三级警报"; break;
-                case AlarmStatus.State.S_A4: lbState.Text = "四级警报"; break;
-                case AlarmStatus.State.S_NORM: lbState.Text = "安全"; break;
-                case AlarmStatus.State.S_ERR: lbState.Text = "错误"; break;
-            }
-        }
-
-        private void ListPorts()
-        {
             comboBoxSerialPorts.Items.Clear();
             foreach (var s in SerialPort.GetPortNames())
-            {
                 comboBoxSerialPorts.Items.Add(s);
+
+            GetProfileFromManager();
+
+            m_Manager = new BLL.AlarmSystem();
+            m_Manager.Update += UpdateFromManger;
+            m_Manager.Error += ErrorFromManager;
+        }
+
+        private void SetProfileToManager()
+        {
+            try
+            {
+                var profile =
+                    new Profile
+                        {
+                            BaudRate = Convert.ToInt32(comboBoxBaudRate.Text),
+                            DataBits = Convert.ToInt32(comboBoxWordLength.Text),
+                            StopBits = (StopBits)Enum.Parse(typeof(StopBits), comboBoxStopBits.Text),
+                            Parity = (Parity)Enum.Parse(typeof(Parity), comboBoxParity.Text)
+                        };
+                m_Manager.TheProfile = profile;
+            }
+            catch (FormatException)
+            {
+                MessageBox.Show("格式错误", "错误");
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show($"未知错误：{e}", "错误");
             }
         }
 
-        private void AlarmSystem_Load(object sender, EventArgs e)
+        private void GetProfileFromManager()
         {
-            sp1.Encoding = System.Text.Encoding.Default;
-            // 预置波特率
-            switch (Profile.G_BAUDRATE)
+            var profile = m_Manager.TheProfile;
+            comboBoxBaudRate.Text = profile.BaudRate.ToString(CultureInfo.InvariantCulture);
+            comboBoxWordLength.Text = profile.DataBits.ToString(CultureInfo.InvariantCulture);
+            comboBoxStopBits.Text = profile.StopBits.ToString();
+            comboBoxParity.Text = profile.Parity.ToString();
+        }
+
+        private void UpdateFromManger(AlarmingState state, Report report)
+        {
+            if (InvokeRequired)
             {
-                case "300":
-                    comboBoxBaudRate.SelectedIndex = 0;
-                    break;
-                case "600":
-                    comboBoxBaudRate.SelectedIndex = 1;
-                    break;
-                case "1200":
-                    comboBoxBaudRate.SelectedIndex = 2;
-                    break;
-                case "2400":
-                    comboBoxBaudRate.SelectedIndex = 3;
-                    break;
-                case "4800":
-                    comboBoxBaudRate.SelectedIndex = 4;
-                    break;
-                case "9600":
-                    comboBoxBaudRate.SelectedIndex = 5;
-                    break;
-                case "19200":
-                    comboBoxBaudRate.SelectedIndex = 6;
-                    break;
-                case "38400":
-                    comboBoxBaudRate.SelectedIndex = 7;
-                    break;
-                case "57600":
-                    comboBoxBaudRate.SelectedIndex = 8;
-                    break;
-                case "115200":
-                    comboBoxBaudRate.SelectedIndex = 9;
-                    break;
-                case "230400":
-                    comboBoxBaudRate.SelectedIndex = 10;
-                    break;
-                case "460800":
-                    comboBoxBaudRate.SelectedIndex = 11;
-                    break;
-                case "921600":
-                    comboBoxBaudRate.SelectedIndex = 12;
-                    break;
-                case "1382400":
-                    comboBoxBaudRate.SelectedIndex = 13;
-                    break;
-                default:
-                    {
-                        MessageBox.Show("波特率预置参数错误。");
-                        return;
-                    }
-            }
-            //预置数据位
-            switch (Profile.G_DATABITS)
-            {
-                case "5":
-                    comboBoxWordLength.SelectedIndex = 0;
-                    break;
-                case "6":
-                    comboBoxWordLength.SelectedIndex = 1;
-                    break;
-                case "7":
-                    comboBoxWordLength.SelectedIndex = 2;
-                    break;
-                case "8":
-                    comboBoxWordLength.SelectedIndex = 3;
-                    break;
-                default:
-                    {
-                        MessageBox.Show("数据位预置参数错误。");
-                        return;
-                    }
-            }
-            //预置停止位
-            switch (Profile.G_STOP)
-            {
-                case "1":
-                    comboBoxStopBits.SelectedIndex = 0;
-                    break;
-                case "1.5":
-                    comboBoxStopBits.SelectedIndex = 1;
-                    break;
-                case "2":
-                    comboBoxStopBits.SelectedIndex = 2;
-                    break;
-                default:
-                    {
-                        MessageBox.Show("停止位预置参数错误。");
-                        return;
-                    }
-            }
-            //预置校验位
-            switch (Profile.G_PARITY)
-            {
-                case "NONE":
-                    comboBoxParity.SelectedIndex = 0;
-                    break;
-                case "ODD":
-                    comboBoxParity.SelectedIndex = 1;
-                    break;
-                case "EVEN":
-                    comboBoxParity.SelectedIndex = 2;
-                    break;
-                default:
-                    {
-                        MessageBox.Show("校验位预置参数错误。");
-                        return;
-                    }
-            }
-            //检查是否含有串口
-            var str = SerialPort.GetPortNames();
-            if (str == null)
-            {
-                MessageBox.Show("本机没有串口！", "Error");
+                Invoke(new Action(() => UpdateFromManger(state, report)));
                 return;
             }
-            ListPorts();
-            Control.CheckForIllegalCrossThreadCalls = false;
-            sp1.DataReceived += new SerialDataReceivedEventHandler(sp1_DataReceived);
-            //准备就绪              
-            sp1.DtrEnable = true;
-            sp1.RtsEnable = true;
 
-            sp1.Close();
+            if (state.HasFlag(AlarmingState.Unarmed))
+            {
+                lblState.Text = "未布防";
+                lblState.BackColor = Color.Gray;
+            }
+            else if (state.HasFlag(AlarmingState.Level4))
+            {
+                lblState.Text = "AA级警报";
+                lblState.BackColor = Color.Red;
+            }
+            else if (state.HasFlag(AlarmingState.Level3))
+            {
+                lblState.Text = "A级警报";
+                lblState.BackColor = Color.Orange;
+            }
+            else if (state.HasFlag(AlarmingState.Level2))
+            {
+                lblState.Text = "B级警报";
+                lblState.BackColor = Color.Gold;
+            }
+            else if (state.HasFlag(AlarmingState.Level1))
+            {
+                lblState.Text = "C级警报";
+                lblState.BackColor = Color.DodgerBlue;
+            }
+            else
+            {
+                lblState.Text = "正常";
+                lblState.BackColor = Color.LawnGreen;
+            }
+
+            tslState.Text = "安全状态：" + lblState.Text;
+            tslError.Text = "系统工作正常";
         }
 
-        void sp1_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        private void ErrorFromManager(Exception e)
         {
-            sp1.Encoding = System.Text.Encoding.Default;
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => ErrorFromManager(e)));
+                return;
+            }
+
+            tslError.Text = "系统错误：" + e.Message;
+        }
+
+        private void sp1_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            sp1.Encoding = Encoding.Default;
 
             if (sp1.IsOpen)
-            {
                 try
                 {
-                    var receivedData = new Byte[sp1.BytesToRead];        //创建接收字节数组
-                    sp1.Read(receivedData, 0, receivedData.Length);         //读取数据
-                    sp1.DiscardInBuffer();                                  //清空SerialPort控件的Buffer
+                    var receivedData = new Byte[sp1.BytesToRead]; //创建接收字节数组
+                    sp1.Read(receivedData, 0, receivedData.Length); //读取数据
+                    sp1.DiscardInBuffer(); //清空SerialPort控件的Buffer
                     lstRecv.AddRange(receivedData);
 
                     if (chbConsole.Checked)
                     {
                         var strRcv = new StringBuilder();
                         for (var i = 0; i < receivedData.Length; i++) //窗体显示
-                        {
-                            strRcv.Append(receivedData[i].ToString("X2") + " ");  //16进制显示
-                        }
-                        txtBoxRxtData.AppendText("\r\n" + "FPGA->PC:" + "\r\n" + "    " + strRcv.ToString());
+                            strRcv.Append(receivedData[i].ToString("X2") + " "); //16进制显示
+                        txtBoxRxtData.AppendText("\r\n" + "FPGA->PC:" + "\r\n" + "    " + strRcv);
 
                         txtBoxRxtData.Focus();
                         txtBoxRxtData.Select(txtBoxRxtData.Text.Length - 1, 0);
@@ -321,29 +147,25 @@ namespace AlarmSystem
                     {
                         lstRecv.RemoveRange(frm.start_i - removed, 8);
                         removed += 8;
-                        lbIllum.Text = frm.illum.ToString();
-                        lbDist.Text = frm.dist.ToString();
-                        lbAcl2.Text = frm.acl2.ToString();
+                        lblIllumValue.Text = frm.illum.ToString();
+                        lblDistValue.Text = frm.dist.ToString();
+                        lblShakeValue.Text = frm.acl2.ToString();
                         alas.Update(frm.dist, frm.illum, frm.acl2, conn, false);
                         UpdateLbState();
                         connchk = 0; // Have connection, so clear connchk;
                     }
                 }
-                catch (System.Exception ex)
+                catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message, "出错提示");
                 }
-            }
             else
-            {
                 MessageBox.Show("请打开某个串口", "错误提示");
-            }
         }
 
         private void btnToggleCom_Click(object sender, EventArgs e)
         {
             if (!sp1.IsOpen)
-            {
                 try
                 {
                     //设置串口号
@@ -363,9 +185,9 @@ namespace AlarmSystem
                     var iBaudRate = Convert.ToInt32(strBaudRate);
                     var iDateBits = Convert.ToInt32(strDateBits);
 
-                    sp1.BaudRate = iBaudRate;       //波特率
-                    sp1.DataBits = iDateBits;       //数据位
-                    switch (comboBoxStopBits.Text)            //停止位
+                    sp1.BaudRate = iBaudRate; //波特率
+                    sp1.DataBits = iDateBits; //数据位
+                    switch (comboBoxStopBits.Text) //停止位
                     {
                         case "1":
                             sp1.StopBits = StopBits.One;
@@ -380,7 +202,7 @@ namespace AlarmSystem
                             MessageBox.Show("Error：参数不正确!", "Error");
                             break;
                     }
-                    switch (comboBoxParity.Text)             //校验位
+                    switch (comboBoxParity.Text) //校验位
                     {
                         case "无":
                             sp1.Parity = Parity.None;
@@ -396,10 +218,8 @@ namespace AlarmSystem
                             break;
                     }
 
-                    if (sp1.IsOpen == true)//如果打开状态，则先关闭一下
-                    {
+                    if (sp1.IsOpen == true) //如果打开状态，则先关闭一下
                         sp1.Close();
-                    }
 
                     //设置必要控件不可用
                     comboBoxSerialPorts.Enabled = false;
@@ -408,17 +228,16 @@ namespace AlarmSystem
                     comboBoxStopBits.Enabled = false;
                     comboBoxParity.Enabled = false;
 
-                    sp1.Open();     //打开串口
+                    sp1.Open(); //打开串口
                     btnToggleCom.Text = "关闭串口";
                     conn = true;
                 }
-                catch (System.Exception ex)
+                catch (Exception ex)
                 {
                     MessageBox.Show("Error:" + ex.Message, "Error");
                     connchk = 0;
                     return;
                 }
-            }
             else
             {
                 //恢复控件功能
@@ -430,7 +249,7 @@ namespace AlarmSystem
                 comboBoxParity.Enabled = true;
                 try
                 {
-                    sp1.Close();                    //关闭串口
+                    sp1.Close(); //关闭串口
                 }
                 catch (Exception)
                 {
@@ -442,85 +261,22 @@ namespace AlarmSystem
             alas.Update(0, 0, false, conn, !conn);
             UpdateLbState();
         }
-        
-        //关闭时事件
 
-        private void AlarmSystem_FormClosing(object sender, FormClosingEventArgs e)
+        private void AlarmSystem_FormClosing(object sender, FormClosingEventArgs e) => m_Manager.UnarmAndClosePort();
+
+        private void btnBuzz_Click(object sender, EventArgs e)
+            => m_Manager.SendManagementPackage(ManagementPackageType.BuzzOn);
+
+        private void btnUnbuzz_Click(object sender, EventArgs e)
+            => m_Manager.SendManagementPackage(ManagementPackageType.BuzzOff);
+
+        private void btnIgnore_Click(object sender, EventArgs e)
+            => m_Manager.IgnoreAlarm();
+
+        private void btnSettings_Click(object sender, EventArgs e)
         {
-            INIFILE.Profile.SaveProfile();
-            sp1.Close();
-        }
-
-        private void txtBoxRxtData_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            //正则匹配
-            var patten = "[0-9a-fA-F]|\b|0x|0X| "; //“\b”：退格键
-            var r = new Regex(patten);
-            var m = r.Match(e.KeyChar.ToString());
-
-            if (m.Success)
-            {
-                e.Handled = false;
-            }
-            else
-            {
-                e.Handled = true;
-            }
-
-        }
-
-        private void textBoxByTimeSend_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            var patten = "[0-9]|\b"; //“\b”：退格键
-            var r = new Regex(patten);
-            var m = r.Match(e.KeyChar.ToString());
-
-            if (m.Success)
-            {
-                e.Handled = false;   //没操作“过”，系统会处理事件    
-            }
-            else
-            {
-                e.Handled = true;
-            }
-        }
-
-        private void btnSend_Click(object sender, EventArgs e)
-        {
-            byte[] cmd;
-            Command.dealCommand(out cmd, txtSend.Text);
-            sendCommand(cmd);
-        }
-
-        private void lbState_Click(object sender, EventArgs e)
-        {
-            if (showConsole)
-            {
-                this.Size = new Size(386, 311);
-                tabControl1.Visible = false;
-                showConsole = false;
-            }
-            else
-            {
-                this.Size = new Size(660, 311);
-                tabControl1.Visible = true;
-                showConsole = true;
-            }
-        }
-
-        private void btnClose_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
-
-        private void btnBuzzon_Click(object sender, EventArgs e)
-        {
-            sendByte(0x88);
-        }
-
-        private void btnBuzzoff_Click(object sender, EventArgs e)
-        {
-            sendByte(0x99);
+            m_ShowConsole ^= true;
+            tabSettings.Visible = m_ShowConsole;
         }
     }
 }

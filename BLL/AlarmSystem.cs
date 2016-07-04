@@ -61,29 +61,8 @@ namespace AlarmSystem.BLL
                     m_Watchdog.Stop();
             }
         }
-
-        private Profile m_TheProfile;
-
-        public Profile TheProfile
-        {
-            get { return m_TheProfile; }
-            set
-            {
-                if (m_TheProfile == value)
-                    return;
-
-                var old = m_TheProfile;
-                m_TheProfile = value;
-                m_Port.Close();
-                if (!m_Port.Open(m_TheProfile, DefaultTimeout))
-                {
-                    m_TheProfile = old;
-                    Error?.Invoke(new TimeoutException("更改端口配置失败"));
-                    return;
-                }
-                ProfileKeeper.SaveProfile(m_TheProfile);
-            }
-        }
+        
+        public Profile TheProfile { get; set; }
 
         private readonly AsyncSerialPort m_Port;
         private AlarmingState m_RealState;
@@ -98,24 +77,26 @@ namespace AlarmSystem.BLL
             try
             {
                 if (ProfileKeeper.IsExists())
-                    m_TheProfile = ProfileKeeper.LoadProfile();
+                    TheProfile = ProfileKeeper.LoadProfile();
             }
             catch (Exception)
             {
                 // ignore
             }
-            if (m_TheProfile == null)
+            if (TheProfile == null)
             {
-                m_TheProfile =
+                var ports = SerialPort.GetPortNames();
+                var name = ports.Length == 0 ? "COM1" : ports[0];
+                TheProfile =
                     new Profile
                     {
-                        Name = "COM1",
+                        Name = name,
                         BaudRate = 115200,
                         DataBits = 8,
                         StopBits = StopBits.One,
                         Parity = Parity.None
                     };
-                ProfileKeeper.SaveProfile(m_TheProfile);
+                ProfileKeeper.SaveProfile(TheProfile);
             }
 
             ShakingEnabled = false;
@@ -127,12 +108,11 @@ namespace AlarmSystem.BLL
             m_Watchdog = new Timer(WatchDogTimeout.TotalMilliseconds) { AutoReset = false };
             m_Watchdog.Elapsed += Watchdog_Triggered;
 
-            m_Port = new AsyncSerialPort(m_TheProfile, 8);
+            m_Port = new AsyncSerialPort(TheProfile, 8);
             m_Port.OpenPort += Port_Open;
             m_Port.ClosePort += Port_Close;
             m_Port.PackageArrived += Port_Package;
             m_Port.ReadWriteError += Port_Error;
-            m_Port.Open(m_TheProfile, DefaultTimeout);
         }
 
         private void Watchdog_Triggered(object sender, ElapsedEventArgs e)
@@ -164,7 +144,7 @@ namespace AlarmSystem.BLL
 
         public void OpenPort()
         {
-            if (!m_Port.Open(m_TheProfile, DefaultTimeout))
+            if (!m_Port.Open(TheProfile, DefaultTimeout))
                 Error?.Invoke(new TimeoutException("打开端口失败"));
         }
 
@@ -215,8 +195,7 @@ namespace AlarmSystem.BLL
             Update?.Invoke(m_State, null);
         }
 
-        // TODO: use DAL.Packer
-        public void SendManagementPackage(byte[] package) => m_Port.Send(package);
+        public void SendManagementPackage(ManagementPackageType type) => m_Port.Send(Packer.GenerateManagementPackage(type));
 
         private void Port_Error(Exception e) => Error?.Invoke(e);
 
