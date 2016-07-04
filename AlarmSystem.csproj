@@ -52,7 +52,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Command.cs" />
+    <Compile Include="DAL\AsyncSerialPort.cs" />
+    <Compile Include="DAL\Packer.cs" />
     <Compile Include="DAL\ProfileKeeper.cs" />
+    <Compile Include="Entities\Report.cs" />
     <Compile Include="FrmAlarm.cs">
       <SubType>Form</SubType>
     </Compile>
