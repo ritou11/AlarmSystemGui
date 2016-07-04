@@ -19,7 +19,8 @@ namespace AlarmSystem.DAL
                         Distance = BitConverter.ToUInt32(buffer, 1) * 40.0 * 170 / 1000000,
                         Illuminance = buffer[5],
                         IsShaking = buffer[6] == 1,
-                        TimeStamp = DateTime.Now
+                        TimeStamp = DateTime.Now,
+                        RawBytes = buffer
                     };
         }
     }

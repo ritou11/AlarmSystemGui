@@ -11,5 +11,7 @@ namespace AlarmSystem.Entities
         public double Distance { get; set; }
 
         public DateTime TimeStamp { get; set; }
+
+        public byte[] RawBytes { get; set; }
     }
 }

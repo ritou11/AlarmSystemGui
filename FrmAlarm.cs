@@ -426,7 +426,7 @@ namespace AlarmSystem
                     comboBoxParity.Enabled = false;
 
                     m_Sp1.Open(); //打开串口
-                    buttonOpenOrCloseCom.Text = "关闭串口";
+                    btnToggleCom.Text = "关闭串口";
                     m_Conn = true;
                 }
                 catch (Exception ex)
@@ -452,7 +452,7 @@ namespace AlarmSystem
                 comboBoxParity.Enabled = true;
 
                 m_Sp1.Close(); //关闭串口
-                buttonOpenOrCloseCom.Text = "打开串口";
+                btnToggleCom.Text = "打开串口";
                 timerSend.Enabled = false; //关闭计时器
                 m_Conn = false;
             }

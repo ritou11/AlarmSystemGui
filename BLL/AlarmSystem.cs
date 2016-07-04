@@ -79,7 +79,9 @@ namespace AlarmSystem.BLL
                 {
                     m_TheProfile = old;
                     Error?.Invoke(new TimeoutException("更改端口配置失败"));
+                    return;
                 }
+                ProfileKeeper.SaveProfile(m_TheProfile);
             }
         }
 
@@ -103,15 +105,18 @@ namespace AlarmSystem.BLL
                 // ignore
             }
             if (m_TheProfile == null)
+            {
                 m_TheProfile =
                     new Profile
-                        {
-                            Name = "COM1",
-                            BaudRate = 115200,
-                            DataBits = 8,
-                            StopBits = StopBits.One,
-                            Parity = Parity.None
-                        };
+                    {
+                        Name = "COM1",
+                        BaudRate = 115200,
+                        DataBits = 8,
+                        StopBits = StopBits.One,
+                        Parity = Parity.None
+                    };
+                ProfileKeeper.SaveProfile(m_TheProfile);
+            }
 
             ShakingEnabled = false;
             IlluminanceEnabled = false;
@@ -209,6 +214,9 @@ namespace AlarmSystem.BLL
             m_State = AlarmingState.None;
             Update?.Invoke(m_State, null);
         }
+
+        // TODO: use DAL.Packer
+        public void SendManagementPackage(byte[] package) => m_Port.Send(package);
 
         private void Port_Error(Exception e) => Error?.Invoke(e);
 
