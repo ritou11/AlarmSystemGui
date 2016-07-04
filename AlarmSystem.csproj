@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BLL\AlarmSystem.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="DAL\AsyncSerialPort.cs" />
     <Compile Include="DAL\Packer.cs" />

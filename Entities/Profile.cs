@@ -1,14 +1,12 @@
 ﻿using System;
 using System.IO.Ports;
 
-namespace AlarmSystem.Entity
+namespace AlarmSystem.Entities
 {
     [Serializable]
     public class Profile
     {
         public string Name { get; set; }
-
-        public bool IsArmed { get; set; }
 
         public int BaudRate { get; set; }
 

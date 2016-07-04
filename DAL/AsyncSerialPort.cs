@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.IO.Ports;
 using System.Threading;
-using AlarmSystem.Entity;
+using AlarmSystem.Entities;
 
 namespace AlarmSystem.DAL
 {
@@ -20,7 +20,7 @@ namespace AlarmSystem.DAL
         public event OpenPortEventHandler OpenPort;
         public event ClosePortEventHandler ClosePort;
         public event ReadWriteErrorEventHandler ReadWriteError;
-        
+
         public AsyncSerialPort(Profile profile, int packageLength)
         {
             m_TheProfile = profile;
@@ -102,7 +102,11 @@ namespace AlarmSystem.DAL
                     var count = 0;
                     while (true)
                     {
-                        var task = m_Port.BaseStream.ReadAsync(buffer, count, PackageLength - count, m_CancelSource.Token);
+                        var task = m_Port.BaseStream.ReadAsync(
+                                                               buffer,
+                                                               count,
+                                                               PackageLength - count,
+                                                               m_CancelSource.Token);
                         task.Wait(m_CancelSource.Token);
                         if (task.IsCanceled)
                             break;
@@ -154,6 +158,10 @@ namespace AlarmSystem.DAL
                         catch (OperationCanceledException)
                         {
                             break;
+                        }
+                        catch (Exception e)
+                        {
+                            ReadWriteError?.Invoke(e);
                         }
                 }
             }

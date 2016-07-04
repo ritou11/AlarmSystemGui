@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using AlarmSystem.Entities;
 
 namespace AlarmSystem.DAL
@@ -19,12 +15,12 @@ namespace AlarmSystem.DAL
 
             return
                 new Report
-                {
-                    Distance = BitConverter.ToUInt32(buffer, 1) * 40.0 * 170 / 1000000,
-                    Illuminance = buffer[5],
-                    IsShaking = buffer[6] == 1,
-                    TimeStamp = DateTime.Now
-                };
+                    {
+                        Distance = BitConverter.ToUInt32(buffer, 1) * 40.0 * 170 / 1000000,
+                        Illuminance = buffer[5],
+                        IsShaking = buffer[6] == 1,
+                        TimeStamp = DateTime.Now
+                    };
         }
     }
 }
