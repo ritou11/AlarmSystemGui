@@ -48,9 +48,9 @@ namespace AlarmSystem.BLL
         public bool ShakingEnabled { get; set; }
         public bool IlluminanceEnabled { get; set; }
         public bool DistanceEnabled { get; set; }
-        
+
         public bool ConnectivityEnabled { get; set; }
-        
+
         public Profile TheProfile { get; set; }
 
         public bool IsOpen { get; private set; }
@@ -80,13 +80,13 @@ namespace AlarmSystem.BLL
                 var name = ports.Length == 0 ? "COM1" : ports[0];
                 TheProfile =
                     new Profile
-                    {
-                        Name = name,
-                        BaudRate = 115200,
-                        DataBits = 8,
-                        StopBits = StopBits.One,
-                        Parity = Parity.None
-                    };
+                        {
+                            Name = name,
+                            BaudRate = 115200,
+                            DataBits = 8,
+                            StopBits = StopBits.One,
+                            Parity = Parity.None
+                        };
                 ProfileKeeper.SaveProfile(TheProfile);
             }
 
@@ -126,12 +126,18 @@ namespace AlarmSystem.BLL
 
         public void OpenPort()
         {
+            if (IsOpen)
+                return;
+
             if (!m_Port.Open(TheProfile, DefaultTimeout))
                 OpenPortResult?.Invoke(new TimeoutException("打开端口失败"));
         }
 
-        public void UnarmAndClosePort()
+        public void ClosePort()
         {
+            if (!IsOpen)
+                return;
+
             RealState = AlarmingState.None;
             State = AlarmingState.Unarmed;
 
@@ -180,7 +186,8 @@ namespace AlarmSystem.BLL
             Update?.Invoke(null);
         }
 
-        public void SendManagementPackage(ManagementPackageType type) => m_Port.Send(Packer.GenerateManagementPackage(type));
+        public void SendManagementPackage(ManagementPackageType type)
+            => m_Port.Send(Packer.GenerateManagementPackage(type));
 
         private void Port_Error(Exception e) => Error?.Invoke(e);
 

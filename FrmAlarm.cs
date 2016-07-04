@@ -19,6 +19,8 @@ namespace AlarmSystem
         {
             InitializeComponent();
 
+            tabSettings.SelectedIndex = 1;
+
             comboBoxSerialPorts.Items.Clear();
             foreach (var s in SerialPort.GetPortNames())
                 comboBoxSerialPorts.Items.Add(s);
@@ -153,7 +155,7 @@ namespace AlarmSystem
                 return;
             }
 
-            tslError.Text = "系统错误：" + e.Message;
+            tslError.Text = "系统错误：" + e.Message.Trim();
             txtLog.AppendText($"ERR @ {DateTime.Now:HH:mm:ss.ffff}");
             txtLog.AppendText(e.ToString());
 
@@ -267,11 +269,11 @@ namespace AlarmSystem
             else
             {
                 btnToggleCom.Enabled = false;
-                m_Manager.UnarmAndClosePort();
+                m_Manager.ClosePort();
             }
         }
 
-        private void AlarmSystem_FormClosing(object sender, FormClosingEventArgs e) => m_Manager.UnarmAndClosePort();
+        private void AlarmSystem_FormClosing(object sender, FormClosingEventArgs e) => m_Manager.ClosePort();
 
         private void btnBuzz_Click(object sender, EventArgs e)
             => m_Manager.SendManagementPackage(ManagementPackageType.BuzzOn);

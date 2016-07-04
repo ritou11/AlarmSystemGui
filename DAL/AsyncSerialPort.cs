@@ -29,8 +29,8 @@ namespace AlarmSystem.DAL
             m_LockPortRx = new object();
             m_LockPortTx = new object();
 
-            m_RxThread = new Thread(RxEnterPoint);
-            m_TxThread = new Thread(TxEnterPoint);
+            m_RxThread = new Thread(RxEnterPoint) { IsBackground = true };
+            m_TxThread = new Thread(TxEnterPoint) { IsBackground = true };
 
             m_TxCollection = new BlockingCollection<byte[]>();
 
@@ -104,7 +104,6 @@ namespace AlarmSystem.DAL
                     var buffer = new byte[PackageLength];
                     var count = 0;
                     while (true)
-                    {
                         try
                         {
                             var task =
@@ -122,10 +121,8 @@ namespace AlarmSystem.DAL
                                 count = 0;
                             }
                             else if (count == 1)
-                            {
                                 if (buffer[0] != StartMark)
                                     count = 0;
-                            }
                         }
                         catch (OperationCanceledException)
                         {
@@ -134,9 +131,7 @@ namespace AlarmSystem.DAL
                         catch (Exception e)
                         {
                             ReadWriteError?.Invoke(e);
-                            continue;
                         }
-                    }
 
 
                     try

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmAlarm));
             this.labelReadData = new System.Windows.Forms.Label();
             this.lblDist = new System.Windows.Forms.Label();
             this.lblDistValue = new System.Windows.Forms.Label();
@@ -88,7 +89,7 @@
             this.lblDist.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblDist.Name = "lblDist";
             this.lblDist.Size = new System.Drawing.Size(177, 50);
-            this.lblDist.TabIndex = 66;
+            this.lblDist.TabIndex = 10;
             this.lblDist.Text = "距离";
             this.lblDist.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblDist.Click += new System.EventHandler(this.lblDist_Click);
@@ -128,7 +129,7 @@
             this.btnBuzz.Margin = new System.Windows.Forms.Padding(4);
             this.btnBuzz.Name = "btnBuzz";
             this.btnBuzz.Size = new System.Drawing.Size(177, 90);
-            this.btnBuzz.TabIndex = 76;
+            this.btnBuzz.TabIndex = 6;
             this.btnBuzz.Text = "启动蜂鸣器";
             this.btnBuzz.UseVisualStyleBackColor = true;
             this.btnBuzz.Click += new System.EventHandler(this.btnBuzz_Click);
@@ -141,7 +142,7 @@
             this.btnIgnore.Margin = new System.Windows.Forms.Padding(4);
             this.btnIgnore.Name = "btnIgnore";
             this.btnIgnore.Size = new System.Drawing.Size(177, 90);
-            this.btnIgnore.TabIndex = 77;
+            this.btnIgnore.TabIndex = 8;
             this.btnIgnore.Text = "忽略警报";
             this.btnIgnore.UseVisualStyleBackColor = true;
             this.btnIgnore.Click += new System.EventHandler(this.btnIgnore_Click);
@@ -154,7 +155,7 @@
             this.btnSettings.Margin = new System.Windows.Forms.Padding(4);
             this.btnSettings.Name = "btnSettings";
             this.btnSettings.Size = new System.Drawing.Size(177, 93);
-            this.btnSettings.TabIndex = 78;
+            this.btnSettings.TabIndex = 9;
             this.btnSettings.Text = "高级选项";
             this.btnSettings.UseVisualStyleBackColor = true;
             this.btnSettings.Click += new System.EventHandler(this.btnSettings_Click);
@@ -179,6 +180,7 @@
             this.tableLayoutPanel1.Controls.Add(this.lblState, 1, 4);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(5);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 8;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
@@ -200,7 +202,7 @@
             this.btnUnbuzz.Margin = new System.Windows.Forms.Padding(4);
             this.btnUnbuzz.Name = "btnUnbuzz";
             this.btnUnbuzz.Size = new System.Drawing.Size(177, 90);
-            this.btnUnbuzz.TabIndex = 81;
+            this.btnUnbuzz.TabIndex = 7;
             this.btnUnbuzz.Text = "关闭蜂鸣器";
             this.btnUnbuzz.UseVisualStyleBackColor = true;
             this.btnUnbuzz.Click += new System.EventHandler(this.btnUnbuzz_Click);
@@ -226,7 +228,7 @@
             this.lblConn.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblConn.Name = "lblConn";
             this.lblConn.Size = new System.Drawing.Size(177, 50);
-            this.lblConn.TabIndex = 76;
+            this.lblConn.TabIndex = 13;
             this.lblConn.Text = "连接";
             this.lblConn.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblConn.Click += new System.EventHandler(this.lblConn_Click);
@@ -240,7 +242,7 @@
             this.lblShake.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblShake.Name = "lblShake";
             this.lblShake.Size = new System.Drawing.Size(177, 50);
-            this.lblShake.TabIndex = 75;
+            this.lblShake.TabIndex = 12;
             this.lblShake.Text = "振动";
             this.lblShake.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblShake.Click += new System.EventHandler(this.lblShake_Click);
@@ -266,7 +268,7 @@
             this.lblIllum.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblIllum.Name = "lblIllum";
             this.lblIllum.Size = new System.Drawing.Size(177, 50);
-            this.lblIllum.TabIndex = 72;
+            this.lblIllum.TabIndex = 11;
             this.lblIllum.Text = "照度";
             this.lblIllum.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblIllum.Click += new System.EventHandler(this.lblIllum_Click);
@@ -345,7 +347,7 @@
             this.txtLog.ReadOnly = true;
             this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtLog.Size = new System.Drawing.Size(416, 550);
-            this.txtLog.TabIndex = 64;
+            this.txtLog.TabIndex = 14;
             // 
             // tabPage2
             // 
@@ -409,7 +411,7 @@
             this.btnToggleCom.Margin = new System.Windows.Forms.Padding(4);
             this.btnToggleCom.Name = "btnToggleCom";
             this.btnToggleCom.Size = new System.Drawing.Size(408, 42);
-            this.btnToggleCom.TabIndex = 24;
+            this.btnToggleCom.TabIndex = 0;
             this.btnToggleCom.Text = "打开串口";
             this.btnToggleCom.UseVisualStyleBackColor = true;
             this.btnToggleCom.Click += new System.EventHandler(this.btnToggleCom_Click);
@@ -428,7 +430,7 @@
             this.comboBoxParity.Margin = new System.Windows.Forms.Padding(4);
             this.comboBoxParity.Name = "comboBoxParity";
             this.comboBoxParity.Size = new System.Drawing.Size(288, 32);
-            this.comboBoxParity.TabIndex = 9;
+            this.comboBoxParity.TabIndex = 5;
             // 
             // comboBoxSerialPorts
             // 
@@ -438,7 +440,7 @@
             this.comboBoxSerialPorts.Margin = new System.Windows.Forms.Padding(4);
             this.comboBoxSerialPorts.Name = "comboBoxSerialPorts";
             this.comboBoxSerialPorts.Size = new System.Drawing.Size(288, 32);
-            this.comboBoxSerialPorts.TabIndex = 23;
+            this.comboBoxSerialPorts.TabIndex = 1;
             // 
             // comboBoxStopBits
             // 
@@ -453,7 +455,7 @@
             this.comboBoxStopBits.Margin = new System.Windows.Forms.Padding(4);
             this.comboBoxStopBits.Name = "comboBoxStopBits";
             this.comboBoxStopBits.Size = new System.Drawing.Size(288, 32);
-            this.comboBoxStopBits.TabIndex = 8;
+            this.comboBoxStopBits.TabIndex = 4;
             // 
             // label8
             // 
@@ -496,7 +498,7 @@
             this.comboBoxBaudRate.Margin = new System.Windows.Forms.Padding(4);
             this.comboBoxBaudRate.Name = "comboBoxBaudRate";
             this.comboBoxBaudRate.Size = new System.Drawing.Size(288, 32);
-            this.comboBoxBaudRate.TabIndex = 6;
+            this.comboBoxBaudRate.TabIndex = 2;
             // 
             // comboBoxWordLength
             // 
@@ -511,7 +513,7 @@
             this.comboBoxWordLength.Margin = new System.Windows.Forms.Padding(4);
             this.comboBoxWordLength.Name = "comboBoxWordLength";
             this.comboBoxWordLength.Size = new System.Drawing.Size(288, 32);
-            this.comboBoxWordLength.TabIndex = 7;
+            this.comboBoxWordLength.TabIndex = 3;
             // 
             // label7
             // 
@@ -547,6 +549,7 @@
             this.Controls.Add(this.labelReadData);
             this.Controls.Add(this.tabSettings);
             this.Controls.Add(this.statusStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "FrmAlarm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
 
-[assembly: AssemblyTitle("NFC_Assistant")]
+[assembly: AssemblyTitle("AlarmSystem")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("NFC_Assistant")]
+[assembly: AssemblyProduct("AlarmSystem")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -22,7 +22,7 @@ using System.Runtime.InteropServices;
 
 // 如果此项目向 COM 公开，则下列 GUID 用于类型库的 ID
 
-[assembly: Guid("d31bfc57-82e2-471c-ac3a-7a78a1ff9096")]
+[assembly: Guid("6581d58a-72d4-45e6-99c7-11070df817ba")]
 
 // 程序集的版本信息由下列四个值组成: 
 //
