@@ -17,9 +17,9 @@ namespace AlarmSystem.BLL
         Level4 = 0x08
     }
 
-    public delegate void UpdateEventHandler(AlarmingState state, Report report);
+    public delegate void UpdateEventHandler(Report report);
 
-    public delegate void ConnLostEventHandler(AlarmingState state);
+    public delegate void ConnLostEventHandler();
 
     public delegate void ErrorEventHandler(Exception e);
 
@@ -28,6 +28,8 @@ namespace AlarmSystem.BLL
         public event UpdateEventHandler Update;
         public event ConnLostEventHandler ConnLost;
         public event ErrorEventHandler Error;
+        public event OpenPortEventHandler OpenPortResult;
+        public event ClosePortEventHandler ClosePortResult;
 
         public TimeSpan DefaultTimeout { get; set; }
 
@@ -68,10 +70,10 @@ namespace AlarmSystem.BLL
         public Profile TheProfile { get; set; }
 
         public bool IsOpen { get; private set; }
+        public AlarmingState State { get; private set; }
+        public AlarmingState RealState { get; private set; }
 
         private readonly AsyncSerialPort m_Port;
-        private AlarmingState m_RealState;
-        private AlarmingState m_State;
         private readonly Timer m_Watchdog;
 
         public AlarmSystem()
@@ -109,11 +111,11 @@ namespace AlarmSystem.BLL
             DistanceEnabled = false;
             m_ConnectivityEnabled = false;
 
-            m_State = AlarmingState.None;
+            State = AlarmingState.None;
             m_Watchdog = new Timer(WatchDogTimeout.TotalMilliseconds) { AutoReset = false };
             m_Watchdog.Elapsed += Watchdog_Triggered;
 
-            m_Port = new AsyncSerialPort(TheProfile, 8);
+            m_Port = new AsyncSerialPort(TheProfile, 8) { StartMark = 0x5a };
             m_Port.OpenPort += Port_Open;
             m_Port.ClosePort += Port_Close;
             m_Port.PackageArrived += Port_Package;
@@ -124,14 +126,14 @@ namespace AlarmSystem.BLL
 
         private void Watchdog_Triggered(object sender, ElapsedEventArgs e)
         {
-            var old = m_RealState;
-            m_RealState |= AlarmingState.Level4;
-            ConnLost?.Invoke(m_State);
+            var old = RealState;
+            RealState |= AlarmingState.Level4;
+            ConnLost?.Invoke();
 
             if (ConnectivityEnabled &&
                 !old.HasFlag(AlarmingState.Level4) &&
-                m_RealState.HasFlag(AlarmingState.Level4))
-                m_State |= AlarmingState.Level4;
+                RealState.HasFlag(AlarmingState.Level4))
+                State |= AlarmingState.Level4;
         }
 
         public void ArmAll()
@@ -158,22 +160,22 @@ namespace AlarmSystem.BLL
 
         public void UnarmAndClosePort()
         {
-            m_RealState = AlarmingState.None;
-            m_State = AlarmingState.Unarmed;
+            RealState = AlarmingState.None;
+            State = AlarmingState.Unarmed;
 
             m_Port.Close();
         }
 
         private void CheckAlarm(Report report)
         {
-            var old = m_RealState;
-            m_RealState = AlarmingState.None;
+            var old = RealState;
+            RealState = AlarmingState.None;
             if (report.Distance > 10)
-                m_RealState |= AlarmingState.Level1;
+                RealState |= AlarmingState.Level1;
             if (report.Illuminance > 5)
-                m_RealState |= AlarmingState.Level2;
+                RealState |= AlarmingState.Level2;
             if (report.IsShaking)
-                m_RealState |= AlarmingState.Level3;
+                RealState |= AlarmingState.Level3;
             if (ConnectivityEnabled)
             {
                 m_Watchdog.Stop();
@@ -182,25 +184,25 @@ namespace AlarmSystem.BLL
 
             if (DistanceEnabled &&
                 !old.HasFlag(AlarmingState.Level1) &&
-                m_RealState.HasFlag(AlarmingState.Level1))
-                m_State |= AlarmingState.Level1;
+                RealState.HasFlag(AlarmingState.Level1))
+                State |= AlarmingState.Level1;
             if (IlluminanceEnabled &&
                 !old.HasFlag(AlarmingState.Level2) &&
-                m_RealState.HasFlag(AlarmingState.Level2))
-                m_State |= AlarmingState.Level2;
+                RealState.HasFlag(AlarmingState.Level2))
+                State |= AlarmingState.Level2;
             if (ShakingEnabled &&
                 !old.HasFlag(AlarmingState.Level3) &&
-                m_RealState.HasFlag(AlarmingState.Level3))
-                m_State |= AlarmingState.Level3;
+                RealState.HasFlag(AlarmingState.Level3))
+                State |= AlarmingState.Level3;
         }
 
         public void IgnoreAlarm()
         {
-            if (m_State == AlarmingState.Unarmed)
+            if (State == AlarmingState.Unarmed)
                 return;
 
-            m_State = AlarmingState.None;
-            Update?.Invoke(m_State, null);
+            State = AlarmingState.None;
+            Update?.Invoke(null);
         }
 
         public void SendManagementPackage(ManagementPackageType type) => m_Port.Send(Packer.GenerateManagementPackage(type));
@@ -216,32 +218,32 @@ namespace AlarmSystem.BLL
                 return;
             }
             CheckAlarm(report);
-            Update?.Invoke(m_State, report);
+            Update?.Invoke(report);
         }
 
         private void Port_Open(Exception e)
         {
             if (e != null)
             {
-                Error?.Invoke(e);
+                OpenPortResult?.Invoke(e);
                 return;
             }
 
             IsOpen = true;
-            Update?.Invoke(m_State, null);
+            OpenPortResult?.Invoke(null);
         }
 
         private void Port_Close(Exception e)
         {
             if (e != null)
             {
-                Error?.Invoke(e);
+                ClosePortResult?.Invoke(e);
                 return;
             }
 
             IsOpen = false;
-            m_State = AlarmingState.Unarmed;
-            Update?.Invoke(m_State, null);
+            State = AlarmingState.Unarmed;
+            ClosePortResult?.Invoke(null);
         }
     }
 }

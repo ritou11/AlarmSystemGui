@@ -6,16 +6,16 @@ using AlarmSystem.Entities;
 
 namespace AlarmSystem.DAL
 {
+    public delegate void PackageArrivedEventHandler(byte[] package);
+
+    public delegate void OpenPortEventHandler(Exception e);
+
+    public delegate void ClosePortEventHandler(Exception e);
+
+    public delegate void ReadWriteErrorEventHandler(Exception e);
+
     public class AsyncSerialPort
     {
-        public delegate void PackageArrivedEventHandler(byte[] package);
-
-        public delegate void OpenPortEventHandler(Exception e);
-
-        public delegate void ClosePortEventHandler(Exception e);
-
-        public delegate void ReadWriteErrorEventHandler(Exception e);
-
         public event PackageArrivedEventHandler PackageArrived;
         public event OpenPortEventHandler OpenPort;
         public event ClosePortEventHandler ClosePort;
@@ -38,6 +38,7 @@ namespace AlarmSystem.DAL
             m_TxThread.Start();
         }
 
+        public byte StartMark { get; set; }
         public int PackageLength { get; set; }
 
         private Profile m_TheProfile;
@@ -90,11 +91,13 @@ namespace AlarmSystem.DAL
                             m_TheProfile.StopBits);
                         m_Port.Open();
                         OpenPort?.Invoke(null);
-                        Monitor.PulseAll(m_LockPortTx);
+                        lock (m_LockPortTx)
+                            Monitor.PulseAll(m_LockPortTx);
                     }
                     catch (Exception e)
                     {
                         OpenPort?.Invoke(e);
+                        continue;
                     }
 
 
@@ -102,27 +105,36 @@ namespace AlarmSystem.DAL
                     var count = 0;
                     while (true)
                     {
-                        var task = m_Port.BaseStream.ReadAsync(
-                                                               buffer,
-                                                               count,
-                                                               PackageLength - count,
-                                                               m_CancelSource.Token);
-                        task.Wait(m_CancelSource.Token);
-                        if (task.IsCanceled)
-                            break;
-
-                        if (task.IsFaulted)
+                        try
                         {
-                            ReadWriteError?.Invoke(task.Exception);
-                            continue;
+                            var task =
+                                m_Port.BaseStream.ReadAsync(
+                                                            buffer,
+                                                            count,
+                                                            count == 0 ? 1 : PackageLength - count,
+                                                            m_CancelSource.Token);
+                            task.Wait(m_CancelSource.Token);
+                            var lng = task.Result;
+                            count = count + lng;
+                            if (count == buffer.Length)
+                            {
+                                PackageArrived?.Invoke(buffer);
+                                count = 0;
+                            }
+                            else if (count == 1)
+                            {
+                                if (buffer[0] != StartMark)
+                                    count = 0;
+                            }
                         }
-
-                        var lng = task.Result;
-                        count = count + lng;
-                        if (count == buffer.Length)
+                        catch (OperationCanceledException)
                         {
-                            PackageArrived?.Invoke(buffer);
-                            count = 0;
+                            break;
+                        }
+                        catch (Exception e)
+                        {
+                            ReadWriteError?.Invoke(e);
+                            continue;
                         }
                     }
 

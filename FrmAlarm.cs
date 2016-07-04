@@ -23,12 +23,14 @@ namespace AlarmSystem
             foreach (var s in SerialPort.GetPortNames())
                 comboBoxSerialPorts.Items.Add(s);
 
-            GetProfileFromManager();
-
             m_Manager = new BLL.AlarmSystem();
             m_Manager.Update += UpdateFromManger;
             m_Manager.ConnLost += ConnLostFromManager;
             m_Manager.Error += ErrorFromManager;
+            m_Manager.OpenPortResult += OpenPortFromManager;
+            m_Manager.ClosePortResult += ClosePortFromManager;
+
+            GetProfileFromManager();
         }
 
         private bool SetProfileToManager()
@@ -38,6 +40,7 @@ namespace AlarmSystem
                 var profile =
                     new Profile
                         {
+                            Name = comboBoxSerialPorts.Text,
                             BaudRate = Convert.ToInt32(comboBoxBaudRate.Text),
                             DataBits = Convert.ToInt32(comboBoxWordLength.Text),
                             StopBits = (StopBits)Enum.Parse(typeof(StopBits), comboBoxStopBits.Text),
@@ -60,29 +63,53 @@ namespace AlarmSystem
         private void GetProfileFromManager()
         {
             var profile = m_Manager.TheProfile;
+            comboBoxSerialPorts.Text = profile.Name;
             comboBoxBaudRate.Text = profile.BaudRate.ToString(CultureInfo.InvariantCulture);
             comboBoxWordLength.Text = profile.DataBits.ToString(CultureInfo.InvariantCulture);
             comboBoxStopBits.Text = profile.StopBits.ToString();
             comboBoxParity.Text = profile.Parity.ToString();
         }
 
-        private void UpdateFromManger(AlarmingState state, Report report)
+        private void UpdateFromManger(Report report)
         {
             if (InvokeRequired)
             {
-                Invoke(new Action(() => UpdateFromManger(state, report)));
+                Invoke(new Action(() => UpdateFromManger(report)));
                 return;
             }
 
-            UpdateState(state);
+            UpdateState();
 
             lblConnValue.Text = "正常";
+            lblConnValue.ForeColor = m_Manager.ConnectivityEnabled ? Color.Black : Color.Gray;
             tslError.Text = "系统工作正常";
 
             if (report == null)
                 return;
 
-            if (report.IsShaking)
+            if (m_Manager.RealState.HasFlag(AlarmingState.Level1))
+            {
+                lblDistValue.Text = report.Distance.ToString(CultureInfo.InvariantCulture);
+                lblDistValue.ForeColor = m_Manager.DistanceEnabled ? Color.Red : Color.Gray;
+            }
+            else
+            {
+                lblDistValue.Text = report.Distance.ToString(CultureInfo.InvariantCulture);
+                lblDistValue.ForeColor = m_Manager.DistanceEnabled ? Color.Black : Color.Gray;
+            }
+
+            if (m_Manager.RealState.HasFlag(AlarmingState.Level2))
+            {
+                lblIllumValue.Text = report.Illuminance.ToString(CultureInfo.InvariantCulture);
+                lblIllumValue.ForeColor = m_Manager.IlluminanceEnabled ? Color.Red : Color.Gray;
+            }
+            else
+            {
+                lblIllumValue.Text = report.Illuminance.ToString(CultureInfo.InvariantCulture);
+                lblIllumValue.ForeColor = m_Manager.IlluminanceEnabled ? Color.Black : Color.Gray;
+            }
+
+            if (m_Manager.RealState.HasFlag(AlarmingState.Level3))
             {
                 lblShakeValue.Text = "异常";
                 lblShakeValue.ForeColor = m_Manager.ShakingEnabled ? Color.Red : Color.Gray;
@@ -93,14 +120,6 @@ namespace AlarmSystem
                 lblShakeValue.ForeColor = m_Manager.ShakingEnabled ? Color.Black : Color.Gray;
             }
 
-            // TODO: show raw_state.dist
-            lblDistValue.Text = report.Distance.ToString(CultureInfo.InvariantCulture);
-            lblDistValue.ForeColor = m_Manager.DistanceEnabled ? Color.Black : Color.Gray;
-
-            // TODO: show raw_state.illum
-            lblIllumValue.Text = report.Illuminance.ToString(CultureInfo.InvariantCulture);
-            lblIllumValue.ForeColor = m_Manager.IlluminanceEnabled ? Color.Black : Color.Gray;
-            
             var sb = new StringBuilder();
             sb.AppendLine($"RX @ {report.TimeStamp:HH:mm:ss.ffff}:");
             foreach (var b in report.RawBytes)
@@ -109,18 +128,18 @@ namespace AlarmSystem
             txtLog.AppendText(sb.ToString());
         }
 
-        private void ConnLostFromManager(AlarmingState state)
+        private void ConnLostFromManager()
         {
             if (InvokeRequired)
             {
-                Invoke(new Action(() => ConnLostFromManager(state)));
+                Invoke(new Action(ConnLostFromManager));
                 return;
             }
 
             lblConnValue.Text = "失联";
             lblConnValue.ForeColor = m_Manager.ConnectivityEnabled ? Color.Red : Color.Gray;
 
-            UpdateState(state);
+            UpdateState();
 
             txtLog.AppendText($"LOST @ {DateTime.Now:HH:mm:ss.ffff}:");
         }
@@ -136,31 +155,85 @@ namespace AlarmSystem
             tslError.Text = "系统错误：" + e.Message;
             txtLog.AppendText($"ERR @ {DateTime.Now:HH:mm:ss.ffff}");
             txtLog.AppendText(e.ToString());
+
+            UpdateState();
         }
 
-        public void UpdateState(AlarmingState state)
+        private void ClosePortFromManager(Exception e)
         {
-            if (state.HasFlag(AlarmingState.Unarmed))
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => ClosePortFromManager(e)));
+                return;
+            }
+
+            btnToggleCom.Enabled = true;
+
+            if (e != null)
+            {
+                ErrorFromManager(e);
+                return;
+            }
+
+            UpdateState();
+
+            comboBoxSerialPorts.Enabled = true;
+            comboBoxBaudRate.Enabled = true;
+            comboBoxWordLength.Enabled = true;
+            comboBoxStopBits.Enabled = true;
+            comboBoxParity.Enabled = true;
+            btnToggleCom.Enabled = true;
+        }
+
+        private void OpenPortFromManager(Exception e)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => OpenPortFromManager(e)));
+                return;
+            }
+
+            btnToggleCom.Enabled = true;
+
+            if (e != null)
+            {
+                ErrorFromManager(e);
+
+                comboBoxSerialPorts.Enabled = true;
+                comboBoxBaudRate.Enabled = true;
+                comboBoxWordLength.Enabled = true;
+                comboBoxStopBits.Enabled = true;
+                comboBoxParity.Enabled = true;
+                btnToggleCom.Enabled = true;
+                return;
+            }
+
+            UpdateState();
+        }
+
+        public void UpdateState()
+        {
+            if (m_Manager.State.HasFlag(AlarmingState.Unarmed))
             {
                 lblState.Text = "未布防";
                 lblState.BackColor = Color.Gray;
             }
-            else if (state.HasFlag(AlarmingState.Level4))
+            else if (m_Manager.State.HasFlag(AlarmingState.Level4))
             {
                 lblState.Text = "AA级警报";
                 lblState.BackColor = Color.Red;
             }
-            else if (state.HasFlag(AlarmingState.Level3))
+            else if (m_Manager.State.HasFlag(AlarmingState.Level3))
             {
                 lblState.Text = "A级警报";
                 lblState.BackColor = Color.Orange;
             }
-            else if (state.HasFlag(AlarmingState.Level2))
+            else if (m_Manager.State.HasFlag(AlarmingState.Level2))
             {
                 lblState.Text = "B级警报";
                 lblState.BackColor = Color.Gold;
             }
-            else if (state.HasFlag(AlarmingState.Level1))
+            else if (m_Manager.State.HasFlag(AlarmingState.Level1))
             {
                 lblState.Text = "C级警报";
                 lblState.BackColor = Color.DodgerBlue;
@@ -173,22 +246,7 @@ namespace AlarmSystem
 
             tslState.Text = "安全状态：" + lblState.Text;
 
-            if (m_Manager.IsOpen)
-            {
-                btnToggleCom.Text = "关闭串口";
-                btnToggleCom.Enabled = true;
-            }
-            else
-            {
-                btnToggleCom.Text = "打开串口";
-
-                comboBoxSerialPorts.Enabled = true;
-                comboBoxBaudRate.Enabled = true;
-                comboBoxWordLength.Enabled = true;
-                comboBoxStopBits.Enabled = true;
-                comboBoxParity.Enabled = true;
-                btnToggleCom.Enabled = true;
-            }
+            btnToggleCom.Text = m_Manager.IsOpen ? "关闭串口" : "打开串口";
         }
 
         private void btnToggleCom_Click(object sender, EventArgs e)
@@ -206,6 +264,7 @@ namespace AlarmSystem
 
                 btnToggleCom.Enabled = false;
                 m_Manager.OpenPort();
+                m_Manager.ArmAll();
             }
             else
             {
