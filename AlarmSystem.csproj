@@ -52,14 +52,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Command.cs" />
+    <Compile Include="DAL\ProfileKeeper.cs" />
     <Compile Include="FrmAlarm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="FrmAlarm.Designer.cs">
       <DependentUpon>FrmAlarm.cs</DependentUpon>
     </Compile>
-    <Compile Include="IniFile.cs" />
-    <Compile Include="Profile.cs" />
+    <Compile Include="Entities\Profile.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FrmAlarm.resx">
