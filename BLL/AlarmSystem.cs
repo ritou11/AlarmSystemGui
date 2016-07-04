@@ -48,24 +48,8 @@ namespace AlarmSystem.BLL
         public bool ShakingEnabled { get; set; }
         public bool IlluminanceEnabled { get; set; }
         public bool DistanceEnabled { get; set; }
-
-        private bool m_ConnectivityEnabled;
-
-        public bool ConnectivityEnabled
-        {
-            get { return m_ConnectivityEnabled; }
-            set
-            {
-                if (m_ConnectivityEnabled == value)
-                    return;
-
-                m_ConnectivityEnabled = value;
-                if (m_ConnectivityEnabled)
-                    m_Watchdog.Start();
-                else
-                    m_Watchdog.Stop();
-            }
-        }
+        
+        public bool ConnectivityEnabled { get; set; }
         
         public Profile TheProfile { get; set; }
 
@@ -106,12 +90,13 @@ namespace AlarmSystem.BLL
                 ProfileKeeper.SaveProfile(TheProfile);
             }
 
-            ShakingEnabled = false;
-            IlluminanceEnabled = false;
-            DistanceEnabled = false;
-            m_ConnectivityEnabled = false;
+            ShakingEnabled = true;
+            IlluminanceEnabled = true;
+            DistanceEnabled = true;
+            ConnectivityEnabled = true;
 
-            State = AlarmingState.None;
+            RealState = AlarmingState.None;
+            State = AlarmingState.Unarmed;
             m_Watchdog = new Timer(WatchDogTimeout.TotalMilliseconds) { AutoReset = false };
             m_Watchdog.Elapsed += Watchdog_Triggered;
 
@@ -128,34 +113,21 @@ namespace AlarmSystem.BLL
         {
             var old = RealState;
             RealState |= AlarmingState.Level4;
-            ConnLost?.Invoke();
 
             if (ConnectivityEnabled &&
                 !old.HasFlag(AlarmingState.Level4) &&
-                RealState.HasFlag(AlarmingState.Level4))
+                RealState.HasFlag(AlarmingState.Level4) &&
+                IsOpen)
+            {
                 State |= AlarmingState.Level4;
-        }
-
-        public void ArmAll()
-        {
-            ShakingEnabled = true;
-            IlluminanceEnabled = true;
-            DistanceEnabled = true;
-            ConnectivityEnabled = true;
-        }
-
-        public void UnarmAll()
-        {
-            ShakingEnabled = false;
-            IlluminanceEnabled = false;
-            DistanceEnabled = false;
-            ConnectivityEnabled = false;
+                ConnLost?.Invoke();
+            }
         }
 
         public void OpenPort()
         {
             if (!m_Port.Open(TheProfile, DefaultTimeout))
-                Error?.Invoke(new TimeoutException("打开端口失败"));
+                OpenPortResult?.Invoke(new TimeoutException("打开端口失败"));
         }
 
         public void UnarmAndClosePort()
@@ -181,6 +153,9 @@ namespace AlarmSystem.BLL
                 m_Watchdog.Stop();
                 m_Watchdog.Start();
             }
+
+            if (!(DistanceEnabled || IlluminanceEnabled || ShakingEnabled || ConnectivityEnabled))
+                State = AlarmingState.Unarmed;
 
             if (DistanceEnabled &&
                 !old.HasFlag(AlarmingState.Level1) &&
@@ -230,7 +205,15 @@ namespace AlarmSystem.BLL
             }
 
             IsOpen = true;
+
+            if (!(DistanceEnabled || IlluminanceEnabled || ShakingEnabled || ConnectivityEnabled))
+                State = AlarmingState.Unarmed;
+            else
+                State = AlarmingState.None;
+
             OpenPortResult?.Invoke(null);
+
+            ProfileKeeper.SaveProfile(TheProfile);
         }
 
         private void Port_Close(Exception e)

@@ -31,6 +31,7 @@ namespace AlarmSystem
             m_Manager.ClosePortResult += ClosePortFromManager;
 
             GetProfileFromManager();
+            UpdateState();
         }
 
         private bool SetProfileToManager()
@@ -182,7 +183,6 @@ namespace AlarmSystem
             comboBoxWordLength.Enabled = true;
             comboBoxStopBits.Enabled = true;
             comboBoxParity.Enabled = true;
-            btnToggleCom.Enabled = true;
         }
 
         private void OpenPortFromManager(Exception e)
@@ -204,7 +204,6 @@ namespace AlarmSystem
                 comboBoxWordLength.Enabled = true;
                 comboBoxStopBits.Enabled = true;
                 comboBoxParity.Enabled = true;
-                btnToggleCom.Enabled = true;
                 return;
             }
 
@@ -264,7 +263,6 @@ namespace AlarmSystem
 
                 btnToggleCom.Enabled = false;
                 m_Manager.OpenPort();
-                m_Manager.ArmAll();
             }
             else
             {
@@ -289,5 +287,16 @@ namespace AlarmSystem
             m_ShowConsole ^= true;
             tabSettings.Visible = m_ShowConsole;
         }
+
+        private void lblDist_Click(object sender, EventArgs e)
+            => m_Manager.DistanceEnabled = !m_Manager.DistanceEnabled;
+
+        private void lblIllum_Click(object sender, EventArgs e)
+            => m_Manager.IlluminanceEnabled = !m_Manager.IlluminanceEnabled;
+
+        private void lblShake_Click(object sender, EventArgs e) => m_Manager.ShakingEnabled = !m_Manager.ShakingEnabled;
+
+        private void lblConn_Click(object sender, EventArgs e)
+            => m_Manager.ConnectivityEnabled = !m_Manager.ConnectivityEnabled;
     }
 }

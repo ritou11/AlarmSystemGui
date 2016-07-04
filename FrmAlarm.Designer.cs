@@ -91,6 +91,7 @@
             this.lblDist.TabIndex = 66;
             this.lblDist.Text = "距离";
             this.lblDist.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblDist.Click += new System.EventHandler(this.lblDist_Click);
             // 
             // lblDistValue
             // 
@@ -228,6 +229,7 @@
             this.lblConn.TabIndex = 76;
             this.lblConn.Text = "连接";
             this.lblConn.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblConn.Click += new System.EventHandler(this.lblConn_Click);
             // 
             // lblShake
             // 
@@ -241,6 +243,7 @@
             this.lblShake.TabIndex = 75;
             this.lblShake.Text = "振动";
             this.lblShake.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblShake.Click += new System.EventHandler(this.lblShake_Click);
             // 
             // lblIllumValue
             // 
@@ -266,6 +269,7 @@
             this.lblIllum.TabIndex = 72;
             this.lblIllum.Text = "照度";
             this.lblIllum.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblIllum.Click += new System.EventHandler(this.lblIllum_Click);
             // 
             // lblShakeValue
             // 
@@ -293,12 +297,14 @@
             // 
             // tslError
             // 
+            this.tslError.BackColor = System.Drawing.SystemColors.Control;
             this.tslError.Name = "tslError";
             this.tslError.Size = new System.Drawing.Size(118, 24);
             this.tslError.Text = "系统工作正常";
             // 
             // tslState
             // 
+            this.tslState.BackColor = System.Drawing.SystemColors.Control;
             this.tslState.Name = "tslState";
             this.tslState.Size = new System.Drawing.Size(1039, 24);
             this.tslState.Spring = true;
@@ -336,6 +342,7 @@
             this.txtLog.Margin = new System.Windows.Forms.Padding(4);
             this.txtLog.Multiline = true;
             this.txtLog.Name = "txtLog";
+            this.txtLog.ReadOnly = true;
             this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtLog.Size = new System.Drawing.Size(416, 550);
             this.txtLog.TabIndex = 64;
