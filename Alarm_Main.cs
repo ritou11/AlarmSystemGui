@@ -1,4 +1,5 @@
-﻿using System;
+﻿using INIFILE;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,29 +13,27 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Threading;
 
-namespace AlarmSystem
+namespace alarm
 {
-    public partial class FrmAlarm : Form
+    public partial class Alarm_Form : Form
     {
         SerialPort sp1 = new SerialPort();
-        List<byte> lstRecv = new List<byte>();
-        ManualResetEvent eventX = new ManualResetEvent(false);
-        static byte wait_for_flag = 0x00;
-        private bool showConsole = true;
-        private bool conn = false;
+        int T_count = 0;
+        int R_count = 0;
+        List<byte> lstRecv=new List<byte>();
+        ManualResetEvent eventX=new ManualResetEvent(false);
+        static byte wait_for_flag=0x00;
+        private bool showConsole=true;
+        private bool conn= false;
         private int connchk = 0;
-        AlarmStatus alas = new AlarmStatus();
+        AlarmStatus alas=new AlarmStatus();
 
-        public FrmAlarm()
-        {
-            InitializeComponent();
-            alas.Update(0, 0, false, conn, !conn);
-            UpdateLbState();
-        }
 
         public bool sendCommand(string cmd)
         {
             sp1.Encoding = System.Text.Encoding.Default;
+            if (checkBoxByTimeSend.Checked) timerSend.Enabled = true;
+            else timerSend.Enabled = false;
 
             if (!sp1.IsOpen) //如果没打开
             {
@@ -42,16 +41,17 @@ namespace AlarmSystem
                 return false;
             }
 
-            var strSend = cmd;
+            string strSend = cmd;
             byte[] byteBuffer;
-            if (!Command.dealCommand(out byteBuffer, strSend))
+            if (!Command.dealCommand(out byteBuffer,strSend))
             {
                 MessageBox.Show("字节越界，请逐个字节输入！", "Error");
+                timerSend.Enabled = false;
                 return false;
             }
 
             sp1.Write(byteBuffer, 0, byteBuffer.Length);
-
+ 
             txtBoxRxtData.AppendText("\r\n" + "PC->PN532:" + "\r\n" + "    " + strSend);
 
             txtBoxRxtData.Focus();
@@ -59,10 +59,14 @@ namespace AlarmSystem
             txtBoxRxtData.ScrollToCaret();
 
             T_count += byteBuffer.Length;
+            tsSend.Text = "T：" + T_count.ToString() + "   ";
+            tsRec.Text = "R：" + R_count.ToString() + "   ";
             return true;
         }
-        public bool sendCommand(string cmd, bool isWaiting)
+        public bool sendCommand(string cmd,bool isWaiting)
         {
+            if (checkBoxByTimeSend.Checked) timerSend.Enabled = true;
+            else timerSend.Enabled = false;
 
             if (!sp1.IsOpen)
             {
@@ -70,53 +74,64 @@ namespace AlarmSystem
                 return false;
             }
 
-            var strSend = cmd;
+            string strSend = cmd;
             byte[] byteBuffer;
-            if (!Command.dealCommand(out byteBuffer, strSend))
+            if (!Command.dealCommand(out byteBuffer,strSend))
             {
                 MessageBox.Show("字节越界，请逐个字节输入！", "Error");
+                timerSend.Enabled = false;
                 return false;
             }
             if (isWaiting)
             {
-                for (var i = 0; i < byteBuffer.Length - 1; i++)
+                for (int i = 0; i < byteBuffer.Length - 1; i++)
                     if (byteBuffer[i] == 0xD4)
-                        wait_for_flag = (byte)(byteBuffer[i + 1] + 1);
+                        wait_for_flag = (byte)(byteBuffer[i + 1]+1);
                 eventX.Reset();
             }
 
             sp1.Write(byteBuffer, 0, byteBuffer.Length);
-
-            txtBoxRxtData.AppendText("\r\n" + "PC->PN532:" + "\r\n" + "    " + strSend);
+            
+            txtBoxRxtData.AppendText( "\r\n" + "PC->PN532:" + "\r\n" + "    " + strSend);
 
             txtBoxRxtData.Focus();
             txtBoxRxtData.Select(txtBoxRxtData.Text.Length - 1, 0);
             txtBoxRxtData.ScrollToCaret();
-            
+
+            T_count += byteBuffer.Length;
+            tsSend.Text = "T：" + T_count.ToString() + "   ";
+            tsRec.Text = "R：" + R_count.ToString() + "   ";
             return true;
         }
         public bool sendCommand(byte[] byteBuffer)
         {
+            if (checkBoxByTimeSend.Checked) timerSend.Enabled = true;
+            else timerSend.Enabled = false;
 
             if (!sp1.IsOpen)
             {
                 MessageBox.Show("请先打开串口！", "Error");
                 return false;
             }
-
+            
             sp1.Write(byteBuffer, 0, byteBuffer.Length);
 
-            txtBoxRxtData.AppendText("\r\n" + "PC->PN532:" + "\r\n" + "    ");
-            for (var i = 0; i < byteBuffer.Length; i++) txtBoxRxtData.AppendText(byteBuffer[i].ToString("X2") + " ");
-
+            txtBoxRxtData.AppendText( "\r\n" + "PC->PN532:" + "\r\n" + "    ");
+            for (int i = 0; i < byteBuffer.Length; i++) txtBoxRxtData.AppendText( byteBuffer[i].ToString("X2")+" ");
+            
             txtBoxRxtData.Focus();
             txtBoxRxtData.Select(txtBoxRxtData.Text.Length - 1, 0);
             txtBoxRxtData.ScrollToCaret();
-            
+
+            T_count += byteBuffer.Length;
+            tsSend.Text = "T：" + T_count.ToString() + "   ";
+            tsRec.Text = "R：" + R_count.ToString() + "   ";
             return true;
         }
         public bool sendByte(byte tosend)
         {
+            if (checkBoxByTimeSend.Checked) timerSend.Enabled = true;
+            else timerSend.Enabled = false;
 
             if (!sp1.IsOpen)
             {
@@ -132,17 +147,29 @@ namespace AlarmSystem
             txtBoxRxtData.Focus();
             txtBoxRxtData.Select(txtBoxRxtData.Text.Length - 1, 0);
             txtBoxRxtData.ScrollToCaret();
-            
+
+            if (chbCounter.Checked)
+            {
+                T_count += 1;
+                tsSend.Text = "T：" + T_count.ToString() + "   ";
+                tsRec.Text = "R：" + R_count.ToString() + "   ";
+            }
             return true;
+        }
+        public Alarm_Form()
+        {
+            InitializeComponent();
+            alas.Update(0, 0, false, conn, !conn);
+            UpdateLbState();
         }
 
         public void UpdateLbState()
         {
             //TODO:　More actions when state changes e.g. color/alert/email
-            switch (alas.AssertState())
+            switch(alas.AssertState())
             {
                 case AlarmStatus.State.S_DISABLED: lbState.Text = "未开启"; break;
-                case AlarmStatus.State.S_A1: lbState.Text = "一级警报"; break;
+                case AlarmStatus.State.S_A1: lbState.Text = "一级警报";break;
                 case AlarmStatus.State.S_A2: lbState.Text = "二级警报"; break;
                 case AlarmStatus.State.S_A3: lbState.Text = "三级警报"; break;
                 case AlarmStatus.State.S_A4: lbState.Text = "四级警报"; break;
@@ -154,7 +181,7 @@ namespace AlarmSystem
         private void ListPorts()
         {
             comboBoxSerialPorts.Items.Clear();
-            foreach (var s in SerialPort.GetPortNames())
+            foreach (string s in SerialPort.GetPortNames())
             {
                 comboBoxSerialPorts.Items.Add(s);
             }
@@ -162,6 +189,7 @@ namespace AlarmSystem
 
         private void AlarmSystem_Load(object sender, EventArgs e)
         {
+            INIFILE.Profile.LoadProfile();//加载所有
             sp1.Encoding = System.Text.Encoding.Default;
             // 预置波特率
             switch (Profile.G_BAUDRATE)
@@ -272,7 +300,7 @@ namespace AlarmSystem
                     }
             }
             //检查是否含有串口
-            var str = SerialPort.GetPortNames();
+            string[] str = SerialPort.GetPortNames();
             if (str == null)
             {
                 MessageBox.Show("本机没有串口！", "Error");
@@ -293,18 +321,27 @@ namespace AlarmSystem
             sp1.Encoding = System.Text.Encoding.Default;
 
             if (sp1.IsOpen)
-            {
+            {                
+                if (chbCounter.Checked)
+                {
+                    R_count += sp1.BytesToRead;
+                    string stt;
+                    stt = "T：" + T_count.ToString() + "   ";
+                    tsSend.Text = stt;
+                    stt = "R：" + R_count.ToString() + "   ";
+                    tsRec.Text = stt;
+                }
                 try
                 {
-                    var receivedData = new Byte[sp1.BytesToRead];        //创建接收字节数组
+                    Byte[] receivedData = new Byte[sp1.BytesToRead];        //创建接收字节数组
                     sp1.Read(receivedData, 0, receivedData.Length);         //读取数据
                     sp1.DiscardInBuffer();                                  //清空SerialPort控件的Buffer
                     lstRecv.AddRange(receivedData);
 
                     if (chbConsole.Checked)
                     {
-                        var strRcv = new StringBuilder();
-                        for (var i = 0; i < receivedData.Length; i++) //窗体显示
+                        StringBuilder strRcv = new StringBuilder();
+                        for (int i = 0; i < receivedData.Length; i++) //窗体显示
                         {
                             strRcv.Append(receivedData[i].ToString("X2") + " ");  //16进制显示
                         }
@@ -315,16 +352,16 @@ namespace AlarmSystem
                         txtBoxRxtData.ScrollToCaret();
                     }
 
-                    var cur_buffer = lstRecv.ToArray();
-                    var removed = 0;
-                    foreach (var frm in Command.getFrame(cur_buffer))
+                    byte[] cur_buffer=lstRecv.ToArray();
+                    int removed = 0;
+                    foreach(var frm in Command.getFrame(cur_buffer))
                     {
-                        lstRecv.RemoveRange(frm.start_i - removed, 8);
+                        lstRecv.RemoveRange(frm.start_i-removed,8);
                         removed += 8;
                         lbIllum.Text = frm.illum.ToString();
                         lbDist.Text = frm.dist.ToString();
                         lbAcl2.Text = frm.acl2.ToString();
-                        alas.Update(frm.dist, frm.illum, frm.acl2, conn, false);
+                        alas.Update(frm.dist,frm.illum,frm.acl2,conn,false);
                         UpdateLbState();
                         connchk = 0; // Have connection, so clear connchk;
                     }
@@ -340,14 +377,14 @@ namespace AlarmSystem
             }
         }
 
-        private void btnToggleCom_Click(object sender, EventArgs e)
+        private void buttonOpenOrCloseCom_Click(object sender, EventArgs e)
         {
             if (!sp1.IsOpen)
             {
                 try
                 {
                     //设置串口号
-                    var serialName = comboBoxSerialPorts.Text;
+                    string serialName = comboBoxSerialPorts.Text;
                     if (serialName == "")
                     {
                         ListPorts();
@@ -356,12 +393,12 @@ namespace AlarmSystem
                     sp1.PortName = serialName;
 
                     //设置各“串口设置”
-                    var strBaudRate = comboBoxBaudRate.Text;
-                    var strDateBits = comboBoxWordLength.Text;
-                    var strStopBits = comboBoxStopBits.Text;
+                    string strBaudRate = comboBoxBaudRate.Text;
+                    string strDateBits = comboBoxWordLength.Text;
+                    string strStopBits = comboBoxStopBits.Text;
 
-                    var iBaudRate = Convert.ToInt32(strBaudRate);
-                    var iDateBits = Convert.ToInt32(strDateBits);
+                    Int32 iBaudRate = Convert.ToInt32(strBaudRate);
+                    Int32 iDateBits = Convert.ToInt32(strDateBits);
 
                     sp1.BaudRate = iBaudRate;       //波特率
                     sp1.DataBits = iDateBits;       //数据位
@@ -400,7 +437,13 @@ namespace AlarmSystem
                     {
                         sp1.Close();
                     }
-
+                    //状态栏设置
+                    tsSpNum.Text = "串口号：" + sp1.PortName + "  ";
+                    tsBaudRate.Text = "波特率：" + sp1.BaudRate + "  ";
+                    tsDataBits.Text = "数据位：" + sp1.DataBits + "  ";
+                    tsStopBits.Text = "停止位：" + sp1.StopBits + "  ";
+                    tsParity.Text = "校验位：" + sp1.Parity + "   ";
+                    
                     //设置必要控件不可用
                     comboBoxSerialPorts.Enabled = false;
                     comboBoxBaudRate.Enabled = false;
@@ -409,18 +452,27 @@ namespace AlarmSystem
                     comboBoxParity.Enabled = false;
 
                     sp1.Open();     //打开串口
-                    btnToggleCom.Text = "关闭串口";
+                    buttonOpenOrCloseCom.Text = "关闭串口";
                     conn = true;
+                    timerCheck.Enabled = true;
                 }
                 catch (System.Exception ex)
                 {
                     MessageBox.Show("Error:" + ex.Message, "Error");
+                    timerSend.Enabled = false;
                     connchk = 0;
+                    timerCheck.Enabled = false;
                     return;
                 }
             }
             else
             {
+                //状态栏设置
+                tsSpNum.Text = "串口号：未指定  ";
+                tsBaudRate.Text = "波特率：未指定  ";
+                tsDataBits.Text = "数据位：未指定  ";
+                tsStopBits.Text = "停止位：未指定  ";
+                tsParity.Text = "校验位：未指定   ";
                 //恢复控件功能
                 //设置必要控件不可用
                 comboBoxSerialPorts.Enabled = true;
@@ -434,15 +486,22 @@ namespace AlarmSystem
                 }
                 catch (Exception)
                 {
-                    MessageBox.Show("Error: Uart lost!", "Error");
+                    MessageBox.Show("Error: Uart lost!","Error");
                 }
-                btnToggleCom.Text = "打开串口";
+                buttonOpenOrCloseCom.Text = "打开串口";
+                timerSend.Enabled = false;         //关闭计时器
+                timerCheck.Enabled = false;
                 conn = false;
             }
-            alas.Update(0, 0, false, conn, !conn);
+            alas.Update(0,0,false,conn,!conn);
             UpdateLbState();
         }
-        
+
+        private void buttonCleanWindows_Click(object sender, EventArgs e)
+        {
+            txtBoxRxtData.Text = "";
+            T_count = R_count = 0;
+        }
         //关闭时事件
 
         private void AlarmSystem_FormClosing(object sender, FormClosingEventArgs e)
@@ -454,9 +513,9 @@ namespace AlarmSystem
         private void txtBoxRxtData_KeyPress(object sender, KeyPressEventArgs e)
         {
             //正则匹配
-            var patten = "[0-9a-fA-F]|\b|0x|0X| "; //“\b”：退格键
-            var r = new Regex(patten);
-            var m = r.Match(e.KeyChar.ToString());
+            string patten = "[0-9a-fA-F]|\b|0x|0X| "; //“\b”：退格键
+            Regex r = new Regex(patten);
+            Match m = r.Match(e.KeyChar.ToString());
 
             if (m.Success)
             {
@@ -469,11 +528,27 @@ namespace AlarmSystem
 
         }
 
+        private void timerSend_Tick(object sender, EventArgs e)
+        {
+            //转换时间间隔
+            string strSecond = textBoxByTimeSend.Text;
+            try
+            {
+                int isecond = int.Parse(strSecond);//Interval以微秒为单位
+                timerSend.Interval = isecond;
+            }
+            catch (System.Exception)
+            {
+                timerSend.Enabled = false;
+                MessageBox.Show("错误的定时输入！", "Error");
+            }
+        }
+
         private void textBoxByTimeSend_KeyPress(object sender, KeyPressEventArgs e)
         {
-            var patten = "[0-9]|\b"; //“\b”：退格键
-            var r = new Regex(patten);
-            var m = r.Match(e.KeyChar.ToString());
+            string patten = "[0-9]|\b"; //“\b”：退格键
+            Regex r = new Regex(patten);
+            Match m = r.Match(e.KeyChar.ToString());
 
             if (m.Success)
             {
@@ -488,7 +563,7 @@ namespace AlarmSystem
         private void btnSend_Click(object sender, EventArgs e)
         {
             byte[] cmd;
-            Command.dealCommand(out cmd, txtSend.Text);
+            Command.dealCommand(out cmd,txtSend.Text);
             sendCommand(cmd);
         }
 
@@ -496,7 +571,7 @@ namespace AlarmSystem
         {
             if (showConsole)
             {
-                this.Size = new Size(386, 311);
+                this.Size = new Size(386,311);
                 tabControl1.Visible = false;
                 showConsole = false;
             }
@@ -521,6 +596,16 @@ namespace AlarmSystem
         private void btnBuzzoff_Click(object sender, EventArgs e)
         {
             sendByte(0x99);
+        }
+
+        private void timerCheck_Tick(object sender, EventArgs e)
+        {
+            if (connchk >= 20)
+            {
+                alas.LostConnection();
+                UpdateLbState();
+            }
+            connchk++;
         }
     }
 }

@@ -28,55 +28,47 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.serialPort1 = new System.IO.Ports.SerialPort(this.components);
-            this.timerSend = new System.Windows.Forms.Timer(this.components);
             this.labelReadData = new System.Windows.Forms.Label();
             this.txtSend = new System.Windows.Forms.TextBox();
             this.btnSend = new System.Windows.Forms.Button();
             this.txtBoxRxtData = new System.Windows.Forms.TextBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.comboBoxParity = new System.Windows.Forms.ComboBox();
+            this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
+            this.btnToggleCom = new System.Windows.Forms.Button();
+            this.comboBoxParity = new System.Windows.Forms.ComboBox();
             this.comboBoxSerialPorts = new System.Windows.Forms.ComboBox();
             this.comboBoxStopBits = new System.Windows.Forms.ComboBox();
-            this.btnToggleCom = new System.Windows.Forms.Button();
-            this.comboBoxWordLength = new System.Windows.Forms.ComboBox();
-            this.comboBoxBaudRate = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
+            this.comboBoxBaudRate = new System.Windows.Forms.ComboBox();
+            this.comboBoxWordLength = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
             this.lblDist = new System.Windows.Forms.Label();
             this.lbDist = new System.Windows.Forms.Label();
             this.lbState = new System.Windows.Forms.Label();
-            this.btnClose = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.button5 = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.lblIllum = new System.Windows.Forms.Label();
-            this.lbIllum = new System.Windows.Forms.Label();
-            this.lbAcl2 = new System.Windows.Forms.Label();
-            this.lblAcl = new System.Windows.Forms.Label();
-            this.lblConn = new System.Windows.Forms.Label();
             this.lbConn = new System.Windows.Forms.Label();
-            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-            this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
+            this.lblConn = new System.Windows.Forms.Label();
+            this.lblAcl = new System.Windows.Forms.Label();
+            this.lbIllum = new System.Windows.Forms.Label();
+            this.lblIllum = new System.Windows.Forms.Label();
+            this.lbAcl2 = new System.Windows.Forms.Label();
+            this.btnClose = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
-            this.tabPage2.SuspendLayout();
-            this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
+            this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // timerSend
-            // 
-            this.timerSend.Interval = 1000;
-            this.timerSend.Tick += new System.EventHandler(this.timerSend_Tick);
             // 
             // labelReadData
             // 
@@ -147,6 +139,23 @@
             this.tabPage1.Text = "控制台";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // tableLayoutPanel2
+            // 
+            this.tableLayoutPanel2.ColumnCount = 2;
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+            this.tableLayoutPanel2.Controls.Add(this.txtBoxRxtData, 0, 0);
+            this.tableLayoutPanel2.Controls.Add(this.btnSend, 1, 1);
+            this.tableLayoutPanel2.Controls.Add(this.txtSend, 0, 1);
+            this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(4, 4);
+            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
+            this.tableLayoutPanel2.RowCount = 2;
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(577, 552);
+            this.tableLayoutPanel2.TabIndex = 64;
+            // 
             // tabPage2
             // 
             this.tabPage2.Controls.Add(this.tableLayoutPanel3);
@@ -154,24 +163,40 @@
             this.tabPage2.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(4);
-            this.tabPage2.Size = new System.Drawing.Size(523, 442);
+            this.tabPage2.Size = new System.Drawing.Size(585, 560);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "设置";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // comboBoxParity
+            // tableLayoutPanel3
             // 
-            this.comboBoxParity.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.comboBoxParity.FormattingEnabled = true;
-            this.comboBoxParity.Items.AddRange(new object[] {
-            "无",
-            "奇校验",
-            "偶校验"});
-            this.comboBoxParity.Location = new System.Drawing.Point(124, 164);
-            this.comboBoxParity.Margin = new System.Windows.Forms.Padding(4);
-            this.comboBoxParity.Name = "comboBoxParity";
-            this.comboBoxParity.Size = new System.Drawing.Size(387, 32);
-            this.comboBoxParity.TabIndex = 9;
+            this.tableLayoutPanel3.ColumnCount = 2;
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 120F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel3.Controls.Add(this.label1, 0, 0);
+            this.tableLayoutPanel3.Controls.Add(this.btnToggleCom, 0, 5);
+            this.tableLayoutPanel3.Controls.Add(this.comboBoxParity, 1, 4);
+            this.tableLayoutPanel3.Controls.Add(this.comboBoxSerialPorts, 1, 0);
+            this.tableLayoutPanel3.Controls.Add(this.comboBoxStopBits, 1, 3);
+            this.tableLayoutPanel3.Controls.Add(this.label8, 0, 4);
+            this.tableLayoutPanel3.Controls.Add(this.label5, 0, 1);
+            this.tableLayoutPanel3.Controls.Add(this.comboBoxBaudRate, 1, 1);
+            this.tableLayoutPanel3.Controls.Add(this.comboBoxWordLength, 1, 2);
+            this.tableLayoutPanel3.Controls.Add(this.label7, 0, 3);
+            this.tableLayoutPanel3.Controls.Add(this.label6, 0, 2);
+            this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel3.Location = new System.Drawing.Point(4, 4);
+            this.tableLayoutPanel3.Name = "tableLayoutPanel3";
+            this.tableLayoutPanel3.RowCount = 7;
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(577, 552);
+            this.tableLayoutPanel3.TabIndex = 25;
             // 
             // label1
             // 
@@ -185,6 +210,33 @@
             this.label1.Text = "串口号";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // btnToggleCom
+            // 
+            this.tableLayoutPanel3.SetColumnSpan(this.btnToggleCom, 2);
+            this.btnToggleCom.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnToggleCom.Location = new System.Drawing.Point(4, 204);
+            this.btnToggleCom.Margin = new System.Windows.Forms.Padding(4);
+            this.btnToggleCom.Name = "btnToggleCom";
+            this.btnToggleCom.Size = new System.Drawing.Size(569, 42);
+            this.btnToggleCom.TabIndex = 24;
+            this.btnToggleCom.Text = "打开串口";
+            this.btnToggleCom.UseVisualStyleBackColor = true;
+            this.btnToggleCom.Click += new System.EventHandler(this.btnToggleCom_Click);
+            // 
+            // comboBoxParity
+            // 
+            this.comboBoxParity.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.comboBoxParity.FormattingEnabled = true;
+            this.comboBoxParity.Items.AddRange(new object[] {
+            "无",
+            "奇校验",
+            "偶校验"});
+            this.comboBoxParity.Location = new System.Drawing.Point(124, 164);
+            this.comboBoxParity.Margin = new System.Windows.Forms.Padding(4);
+            this.comboBoxParity.Name = "comboBoxParity";
+            this.comboBoxParity.Size = new System.Drawing.Size(449, 32);
+            this.comboBoxParity.TabIndex = 9;
+            // 
             // comboBoxSerialPorts
             // 
             this.comboBoxSerialPorts.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -192,7 +244,7 @@
             this.comboBoxSerialPorts.Location = new System.Drawing.Point(124, 4);
             this.comboBoxSerialPorts.Margin = new System.Windows.Forms.Padding(4);
             this.comboBoxSerialPorts.Name = "comboBoxSerialPorts";
-            this.comboBoxSerialPorts.Size = new System.Drawing.Size(387, 32);
+            this.comboBoxSerialPorts.Size = new System.Drawing.Size(449, 32);
             this.comboBoxSerialPorts.TabIndex = 23;
             // 
             // comboBoxStopBits
@@ -206,61 +258,8 @@
             this.comboBoxStopBits.Location = new System.Drawing.Point(124, 124);
             this.comboBoxStopBits.Margin = new System.Windows.Forms.Padding(4);
             this.comboBoxStopBits.Name = "comboBoxStopBits";
-            this.comboBoxStopBits.Size = new System.Drawing.Size(387, 32);
+            this.comboBoxStopBits.Size = new System.Drawing.Size(449, 32);
             this.comboBoxStopBits.TabIndex = 8;
-            // 
-            // btnToggleCom
-            // 
-            this.tableLayoutPanel3.SetColumnSpan(this.btnToggleCom, 2);
-            this.btnToggleCom.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnToggleCom.Location = new System.Drawing.Point(4, 204);
-            this.btnToggleCom.Margin = new System.Windows.Forms.Padding(4);
-            this.btnToggleCom.Name = "btnToggleCom";
-            this.btnToggleCom.Size = new System.Drawing.Size(507, 42);
-            this.btnToggleCom.TabIndex = 24;
-            this.btnToggleCom.Text = "打开串口";
-            this.btnToggleCom.UseVisualStyleBackColor = true;
-            this.btnToggleCom.Click += new System.EventHandler(this.buttonOpenOrCloseCom_Click);
-            // 
-            // comboBoxWordLength
-            // 
-            this.comboBoxWordLength.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.comboBoxWordLength.FormattingEnabled = true;
-            this.comboBoxWordLength.Items.AddRange(new object[] {
-            "5",
-            "6",
-            "7",
-            "8"});
-            this.comboBoxWordLength.Location = new System.Drawing.Point(124, 84);
-            this.comboBoxWordLength.Margin = new System.Windows.Forms.Padding(4);
-            this.comboBoxWordLength.Name = "comboBoxWordLength";
-            this.comboBoxWordLength.Size = new System.Drawing.Size(387, 32);
-            this.comboBoxWordLength.TabIndex = 7;
-            // 
-            // comboBoxBaudRate
-            // 
-            this.comboBoxBaudRate.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.comboBoxBaudRate.FormattingEnabled = true;
-            this.comboBoxBaudRate.Items.AddRange(new object[] {
-            "300",
-            "600",
-            "1200",
-            "2400",
-            "4800",
-            "9600",
-            "19200",
-            "38400",
-            "57600",
-            "115200",
-            "230400",
-            "460800",
-            "921600",
-            "1382400"});
-            this.comboBoxBaudRate.Location = new System.Drawing.Point(124, 44);
-            this.comboBoxBaudRate.Margin = new System.Windows.Forms.Padding(4);
-            this.comboBoxBaudRate.Name = "comboBoxBaudRate";
-            this.comboBoxBaudRate.Size = new System.Drawing.Size(387, 32);
-            this.comboBoxBaudRate.TabIndex = 6;
             // 
             // label8
             // 
@@ -286,17 +285,45 @@
             this.label5.Text = "波特率";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // label6
+            // comboBoxBaudRate
             // 
-            this.label6.AutoSize = true;
-            this.label6.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label6.Location = new System.Drawing.Point(4, 80);
-            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(112, 40);
-            this.label6.TabIndex = 2;
-            this.label6.Text = "数据位";
-            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.comboBoxBaudRate.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.comboBoxBaudRate.FormattingEnabled = true;
+            this.comboBoxBaudRate.Items.AddRange(new object[] {
+            "300",
+            "600",
+            "1200",
+            "2400",
+            "4800",
+            "9600",
+            "19200",
+            "38400",
+            "57600",
+            "115200",
+            "230400",
+            "460800",
+            "921600",
+            "1382400"});
+            this.comboBoxBaudRate.Location = new System.Drawing.Point(124, 44);
+            this.comboBoxBaudRate.Margin = new System.Windows.Forms.Padding(4);
+            this.comboBoxBaudRate.Name = "comboBoxBaudRate";
+            this.comboBoxBaudRate.Size = new System.Drawing.Size(449, 32);
+            this.comboBoxBaudRate.TabIndex = 6;
+            // 
+            // comboBoxWordLength
+            // 
+            this.comboBoxWordLength.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.comboBoxWordLength.FormattingEnabled = true;
+            this.comboBoxWordLength.Items.AddRange(new object[] {
+            "5",
+            "6",
+            "7",
+            "8"});
+            this.comboBoxWordLength.Location = new System.Drawing.Point(124, 84);
+            this.comboBoxWordLength.Margin = new System.Windows.Forms.Padding(4);
+            this.comboBoxWordLength.Name = "comboBoxWordLength";
+            this.comboBoxWordLength.Size = new System.Drawing.Size(449, 32);
+            this.comboBoxWordLength.TabIndex = 7;
             // 
             // label7
             // 
@@ -309,6 +336,18 @@
             this.label7.TabIndex = 3;
             this.label7.Text = "停止位";
             this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label6.Location = new System.Drawing.Point(4, 80);
+            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(112, 40);
+            this.label6.TabIndex = 2;
+            this.label6.Text = "数据位";
+            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblDist
             // 
@@ -349,18 +388,6 @@
             this.lbState.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lbState.Click += new System.EventHandler(this.lbState_Click);
             // 
-            // btnClose
-            // 
-            this.btnClose.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnClose.Location = new System.Drawing.Point(704, 846);
-            this.btnClose.Margin = new System.Windows.Forms.Padding(4);
-            this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(100, 34);
-            this.btnClose.TabIndex = 75;
-            this.btnClose.Text = "退出";
-            this.btnClose.UseVisualStyleBackColor = true;
-            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
-            // 
             // button3
             // 
             this.button3.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
@@ -400,7 +427,7 @@
             this.tableLayoutPanel1.ColumnCount = 3;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 75F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 600F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 601F));
             this.tableLayoutPanel1.Controls.Add(this.lbConn, 1, 3);
             this.tableLayoutPanel1.Controls.Add(this.lblConn, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.lblAcl, 0, 2);
@@ -423,55 +450,17 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(1273, 605);
             this.tableLayoutPanel1.TabIndex = 79;
             // 
-            // lblIllum
+            // lbConn
             // 
-            this.lblIllum.AutoSize = true;
-            this.lblIllum.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblIllum.Font = new System.Drawing.Font("微软雅黑", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lblIllum.Location = new System.Drawing.Point(4, 60);
-            this.lblIllum.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblIllum.Name = "lblIllum";
-            this.lblIllum.Size = new System.Drawing.Size(160, 60);
-            this.lblIllum.TabIndex = 72;
-            this.lblIllum.Text = "照度";
-            this.lblIllum.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lbIllum
-            // 
-            this.lbIllum.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lbIllum.Font = new System.Drawing.Font("微软雅黑", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lbIllum.Location = new System.Drawing.Point(172, 60);
-            this.lbIllum.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lbIllum.Name = "lbIllum";
-            this.lbIllum.Size = new System.Drawing.Size(496, 60);
-            this.lbIllum.TabIndex = 73;
-            this.lbIllum.Text = "无数据";
-            this.lbIllum.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lbAcl2
-            // 
-            this.lbAcl2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lbAcl2.Font = new System.Drawing.Font("微软雅黑", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lbAcl2.Location = new System.Drawing.Point(172, 120);
-            this.lbAcl2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lbAcl2.Name = "lbAcl2";
-            this.lbAcl2.Size = new System.Drawing.Size(496, 60);
-            this.lbAcl2.TabIndex = 74;
-            this.lbAcl2.Text = "无数据";
-            this.lbAcl2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblAcl
-            // 
-            this.lblAcl.AutoSize = true;
-            this.lblAcl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblAcl.Font = new System.Drawing.Font("微软雅黑", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lblAcl.Location = new System.Drawing.Point(4, 120);
-            this.lblAcl.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblAcl.Name = "lblAcl";
-            this.lblAcl.Size = new System.Drawing.Size(160, 60);
-            this.lblAcl.TabIndex = 75;
-            this.lblAcl.Text = "振动";
-            this.lblAcl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lbConn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lbConn.Font = new System.Drawing.Font("微软雅黑", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbConn.Location = new System.Drawing.Point(172, 180);
+            this.lbConn.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbConn.Name = "lbConn";
+            this.lbConn.Size = new System.Drawing.Size(496, 60);
+            this.lbConn.TabIndex = 77;
+            this.lbConn.Text = "无数据";
+            this.lbConn.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblConn
             // 
@@ -486,64 +475,67 @@
             this.lblConn.Text = "连接";
             this.lblConn.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // lbConn
+            // lblAcl
             // 
-            this.lbConn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lbConn.Font = new System.Drawing.Font("微软雅黑", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lbConn.Location = new System.Drawing.Point(172, 180);
-            this.lbConn.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lbConn.Name = "lbConn";
-            this.lbConn.Size = new System.Drawing.Size(496, 60);
-            this.lbConn.TabIndex = 77;
-            this.lbConn.Text = "无数据";
-            this.lbConn.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblAcl.AutoSize = true;
+            this.lblAcl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblAcl.Font = new System.Drawing.Font("微软雅黑", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lblAcl.Location = new System.Drawing.Point(4, 120);
+            this.lblAcl.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblAcl.Name = "lblAcl";
+            this.lblAcl.Size = new System.Drawing.Size(160, 60);
+            this.lblAcl.TabIndex = 75;
+            this.lblAcl.Text = "振动";
+            this.lblAcl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // tableLayoutPanel2
+            // lbIllum
             // 
-            this.tableLayoutPanel2.ColumnCount = 2;
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
-            this.tableLayoutPanel2.Controls.Add(this.txtBoxRxtData, 0, 0);
-            this.tableLayoutPanel2.Controls.Add(this.btnSend, 1, 1);
-            this.tableLayoutPanel2.Controls.Add(this.txtSend, 0, 1);
-            this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(4, 4);
-            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 2;
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(577, 552);
-            this.tableLayoutPanel2.TabIndex = 64;
+            this.lbIllum.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lbIllum.Font = new System.Drawing.Font("微软雅黑", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbIllum.Location = new System.Drawing.Point(172, 60);
+            this.lbIllum.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbIllum.Name = "lbIllum";
+            this.lbIllum.Size = new System.Drawing.Size(496, 60);
+            this.lbIllum.TabIndex = 73;
+            this.lbIllum.Text = "无数据";
+            this.lbIllum.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // tableLayoutPanel3
+            // lblIllum
             // 
-            this.tableLayoutPanel3.ColumnCount = 2;
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 120F));
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel3.Controls.Add(this.label1, 0, 0);
-            this.tableLayoutPanel3.Controls.Add(this.btnToggleCom, 0, 5);
-            this.tableLayoutPanel3.Controls.Add(this.comboBoxParity, 1, 4);
-            this.tableLayoutPanel3.Controls.Add(this.comboBoxSerialPorts, 1, 0);
-            this.tableLayoutPanel3.Controls.Add(this.comboBoxStopBits, 1, 3);
-            this.tableLayoutPanel3.Controls.Add(this.label8, 0, 4);
-            this.tableLayoutPanel3.Controls.Add(this.label5, 0, 1);
-            this.tableLayoutPanel3.Controls.Add(this.comboBoxBaudRate, 1, 1);
-            this.tableLayoutPanel3.Controls.Add(this.comboBoxWordLength, 1, 2);
-            this.tableLayoutPanel3.Controls.Add(this.label7, 0, 3);
-            this.tableLayoutPanel3.Controls.Add(this.label6, 0, 2);
-            this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel3.Location = new System.Drawing.Point(4, 4);
-            this.tableLayoutPanel3.Name = "tableLayoutPanel3";
-            this.tableLayoutPanel3.RowCount = 7;
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(515, 434);
-            this.tableLayoutPanel3.TabIndex = 25;
+            this.lblIllum.AutoSize = true;
+            this.lblIllum.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblIllum.Font = new System.Drawing.Font("微软雅黑", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lblIllum.Location = new System.Drawing.Point(4, 60);
+            this.lblIllum.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblIllum.Name = "lblIllum";
+            this.lblIllum.Size = new System.Drawing.Size(160, 60);
+            this.lblIllum.TabIndex = 72;
+            this.lblIllum.Text = "照度";
+            this.lblIllum.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lbAcl2
+            // 
+            this.lbAcl2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lbAcl2.Font = new System.Drawing.Font("微软雅黑", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lbAcl2.Location = new System.Drawing.Point(172, 120);
+            this.lbAcl2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbAcl2.Name = "lbAcl2";
+            this.lbAcl2.Size = new System.Drawing.Size(496, 60);
+            this.lbAcl2.TabIndex = 74;
+            this.lbAcl2.Text = "无数据";
+            this.lbAcl2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // btnClose
+            // 
+            this.btnClose.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnClose.Location = new System.Drawing.Point(704, 846);
+            this.btnClose.Margin = new System.Windows.Forms.Padding(4);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(100, 34);
+            this.btnClose.TabIndex = 75;
+            this.btnClose.Text = "退出";
+            this.btnClose.UseVisualStyleBackColor = true;
+            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
             // FrmAlarm
             // 
@@ -566,21 +558,19 @@
             this.Load += new System.EventHandler(this.AlarmSystem_Load);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
-            this.tabPage2.ResumeLayout(false);
-            this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
+            this.tabPage2.ResumeLayout(false);
             this.tableLayoutPanel3.ResumeLayout(false);
             this.tableLayoutPanel3.PerformLayout();
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-        private System.IO.Ports.SerialPort serialPort1;
-        private System.Windows.Forms.Timer timerSend;
         private System.Windows.Forms.Label labelReadData;
         private System.Windows.Forms.TextBox txtSend;
         private System.Windows.Forms.Button btnSend;
@@ -602,7 +592,6 @@
         private System.Windows.Forms.Label lblDist;
         private System.Windows.Forms.Label lbDist;
         private System.Windows.Forms.Label lbState;
-        private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button button5;
@@ -615,6 +604,7 @@
         private System.Windows.Forms.Label lbAcl2;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
+        private System.Windows.Forms.Button btnClose;
     }
 }
 
