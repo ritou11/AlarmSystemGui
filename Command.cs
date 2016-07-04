@@ -39,7 +39,7 @@ namespace alarm
             if (!isDist) return State.S_A1;
             return State.S_NORM;
         }
-        public State Update(int dist, byte illum, bool acl2, bool conn, bool disabled)
+        public State Update(uint dist, byte illum, bool acl2, bool conn, bool disabled)
         {
             isDist = (dist < MaxDist);
             isIllum = (illum < MaxIllum);
@@ -48,15 +48,20 @@ namespace alarm
             isDisabled = disabled;
             return AssertState();
         }
+        public State LostConnection()
+        {
+            isConnected = false;
+            return AssertState();
+        }
     }
     public class AlarmFrame
     {
         public int start_i;
-        public int dist;
+        public uint dist;
         public byte illum;
         public bool acl2;
         public AlarmFrame() { }
-        public AlarmFrame(int DIST,byte ILLUM, bool ACL2, int I)
+        public AlarmFrame(uint DIST,byte ILLUM, bool ACL2, int I)
         {
             dist = DIST;
             illum = ILLUM;
@@ -115,36 +120,6 @@ namespace alarm
             return true;
         }
         /*Constructure a piece of command*/
-        public static void calcCommand(out byte[] byteBuffer,params string[] content)
-        {
-            StringBuilder strSend=new StringBuilder();
-            foreach(string s in content)
-            {
-                strSend.Append(' ');
-                strSend.Append(s);
-            }
-            byte[] tmpBuffer;
-            dealCommand(out tmpBuffer, strSend.ToString());
-            byteBuffer = new byte[tmpBuffer.Length+8];//00 00 FF LEN LCS D4 ....... DCS 00
-            byteBuffer[0] = 0;
-            byteBuffer[1] = 0;
-            byteBuffer[2] = 0xFF;
-            byteBuffer[3] = (byte)(tmpBuffer.Length+1);
-            byteBuffer[4] = (byte)(0x100 - byteBuffer[3]);
-            byteBuffer[5] = 0xD4;
-            for(int i = 6; i < byteBuffer.Length - 2; i++)
-            {
-                byteBuffer[i] = tmpBuffer[i - 6];
-            }
-            byte sum=0xD4;
-            foreach(byte b in tmpBuffer)
-            {
-                sum += b;
-            }
-            byteBuffer[byteBuffer.Length-2]=(byte)(0x100- sum);
-            byteBuffer[byteBuffer.Length - 1] = 0;
-        }
-
         public static IEnumerable<AlarmFrame> getFrame(byte[] src)
         {
             for (int i = 0; i < src.Length - 8; i++) if (src[i] == 0x5A)
@@ -153,8 +128,9 @@ namespace alarm
                     chk = (byte)(src[i + 4] ^ src[i + 5] ^ src[i + 6]);
                     if (chk == src[i + 7])
                     {
-                        int dist = (src[i + 1] << 12) + (src[i + 2] << 8) + (src[i + 3] << 4) + src[i + 4];
-                        dist = dist * 40 * 170 / 1000000;
+                        byte[] distbyte=new byte[]{src[i+4],src[i+3],src[i+2],src[i+1]};
+                        uint dist = BitConverter.ToUInt32(distbyte, 0);                        
+                        dist = dist * 40 * 174 / 10000000;
                         byte illum = src[i + 5];
                         bool acl2 = (src[i + 6] == 1);
                         yield return new AlarmFrame(dist, illum, acl2, i);

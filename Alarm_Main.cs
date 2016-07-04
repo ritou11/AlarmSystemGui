@@ -25,6 +25,7 @@ namespace alarm
         static byte wait_for_flag=0x00;
         private bool showConsole=true;
         private bool conn= false;
+        private int connchk = 0;
         AlarmStatus alas=new AlarmStatus();
 
 
@@ -127,7 +128,34 @@ namespace alarm
             tsRec.Text = "R：" + R_count.ToString() + "   ";
             return true;
         }
+        public bool sendByte(byte tosend)
+        {
+            if (checkBoxByTimeSend.Checked) timerSend.Enabled = true;
+            else timerSend.Enabled = false;
 
+            if (!sp1.IsOpen)
+            {
+                MessageBox.Show("请先打开串口！", "Error");
+                return false;
+            }
+
+            sp1.Write(new byte[] { tosend }, 0, 1);
+
+            txtBoxRxtData.AppendText("\r\n" + "PC->PN532:" + "\r\n" + "    ");
+            txtBoxRxtData.AppendText(tosend.ToString("X2") + " ");
+
+            txtBoxRxtData.Focus();
+            txtBoxRxtData.Select(txtBoxRxtData.Text.Length - 1, 0);
+            txtBoxRxtData.ScrollToCaret();
+
+            if (chbCounter.Checked)
+            {
+                T_count += 1;
+                tsSend.Text = "T：" + T_count.ToString() + "   ";
+                tsRec.Text = "R：" + R_count.ToString() + "   ";
+            }
+            return true;
+        }
         public Alarm_Form()
         {
             InitializeComponent();
@@ -293,13 +321,16 @@ namespace alarm
             sp1.Encoding = System.Text.Encoding.Default;
 
             if (sp1.IsOpen)
-            {
-                R_count += sp1.BytesToRead;
-                string stt;
-                stt = "T：" + T_count.ToString() + "   ";
-                tsSend.Text = stt;
-                stt = "R：" + R_count.ToString() + "   ";
-                tsRec.Text = stt;
+            {                
+                if (chbCounter.Checked)
+                {
+                    R_count += sp1.BytesToRead;
+                    string stt;
+                    stt = "T：" + T_count.ToString() + "   ";
+                    tsSend.Text = stt;
+                    stt = "R：" + R_count.ToString() + "   ";
+                    tsRec.Text = stt;
+                }
                 try
                 {
                     Byte[] receivedData = new Byte[sp1.BytesToRead];        //创建接收字节数组
@@ -307,16 +338,19 @@ namespace alarm
                     sp1.DiscardInBuffer();                                  //清空SerialPort控件的Buffer
                     lstRecv.AddRange(receivedData);
 
-                    StringBuilder strRcv = new StringBuilder();
-                    for (int i = 0; i < receivedData.Length; i++) //窗体显示
+                    if (chbConsole.Checked)
                     {
-                        strRcv.Append(receivedData[i].ToString("X2") + " ");  //16进制显示
-                    }
-                    txtBoxRxtData.AppendText("\r\n" + "FPGA->PC:" + "\r\n" + "    " + strRcv.ToString());
+                        StringBuilder strRcv = new StringBuilder();
+                        for (int i = 0; i < receivedData.Length; i++) //窗体显示
+                        {
+                            strRcv.Append(receivedData[i].ToString("X2") + " ");  //16进制显示
+                        }
+                        txtBoxRxtData.AppendText("\r\n" + "FPGA->PC:" + "\r\n" + "    " + strRcv.ToString());
 
-                    txtBoxRxtData.Focus();
-                    txtBoxRxtData.Select(txtBoxRxtData.Text.Length - 1, 0);
-                    txtBoxRxtData.ScrollToCaret();
+                        txtBoxRxtData.Focus();
+                        txtBoxRxtData.Select(txtBoxRxtData.Text.Length - 1, 0);
+                        txtBoxRxtData.ScrollToCaret();
+                    }
 
                     byte[] cur_buffer=lstRecv.ToArray();
                     int removed = 0;
@@ -329,6 +363,7 @@ namespace alarm
                         lbAcl2.Text = frm.acl2.ToString();
                         alas.Update(frm.dist,frm.illum,frm.acl2,conn,false);
                         UpdateLbState();
+                        connchk = 0; // Have connection, so clear connchk;
                     }
                 }
                 catch (System.Exception ex)
@@ -419,11 +454,14 @@ namespace alarm
                     sp1.Open();     //打开串口
                     buttonOpenOrCloseCom.Text = "关闭串口";
                     conn = true;
+                    timerCheck.Enabled = true;
                 }
                 catch (System.Exception ex)
                 {
                     MessageBox.Show("Error:" + ex.Message, "Error");
                     timerSend.Enabled = false;
+                    connchk = 0;
+                    timerCheck.Enabled = false;
                     return;
                 }
             }
@@ -442,10 +480,17 @@ namespace alarm
                 comboBoxWordLength.Enabled = true;
                 comboBoxStopBits.Enabled = true;
                 comboBoxParity.Enabled = true;
-
-                sp1.Close();                    //关闭串口
+                try
+                {
+                    sp1.Close();                    //关闭串口
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Error: Uart lost!","Error");
+                }
                 buttonOpenOrCloseCom.Text = "打开串口";
                 timerSend.Enabled = false;         //关闭计时器
+                timerCheck.Enabled = false;
                 conn = false;
             }
             alas.Update(0,0,false,conn,!conn);
@@ -518,7 +563,7 @@ namespace alarm
         private void btnSend_Click(object sender, EventArgs e)
         {
             byte[] cmd;
-            Command.calcCommand(out cmd,txtSend.Text);
+            Command.dealCommand(out cmd,txtSend.Text);
             sendCommand(cmd);
         }
 
@@ -541,6 +586,26 @@ namespace alarm
         private void btnClose_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void btnBuzzon_Click(object sender, EventArgs e)
+        {
+            sendByte(0x88);
+        }
+
+        private void btnBuzzoff_Click(object sender, EventArgs e)
+        {
+            sendByte(0x99);
+        }
+
+        private void timerCheck_Tick(object sender, EventArgs e)
+        {
+            if (connchk >= 20)
+            {
+                alas.LostConnection();
+                UpdateLbState();
+            }
+            connchk++;
         }
     }
 }

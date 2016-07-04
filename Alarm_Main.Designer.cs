@@ -52,6 +52,8 @@
             this.checkBoxByTimeSend = new System.Windows.Forms.CheckBox();
             this.label10 = new System.Windows.Forms.Label();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.chbCounter = new System.Windows.Forms.CheckBox();
+            this.chbConsole = new System.Windows.Forms.CheckBox();
             this.comboBoxParity = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.comboBoxSerialPorts = new System.Windows.Forms.ComboBox();
@@ -73,9 +75,10 @@
             this.lbIllum = new System.Windows.Forms.Label();
             this.lbState = new System.Windows.Forms.Label();
             this.btnClose = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
+            this.btnBuzzon = new System.Windows.Forms.Button();
+            this.btnBuzzoff = new System.Windows.Forms.Button();
             this.button5 = new System.Windows.Forms.Button();
+            this.timerCheck = new System.Windows.Forms.Timer(this.components);
             this.statusStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -258,6 +261,8 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.chbCounter);
+            this.tabPage2.Controls.Add(this.chbConsole);
             this.tabPage2.Controls.Add(this.comboBoxParity);
             this.tabPage2.Controls.Add(this.label1);
             this.tabPage2.Controls.Add(this.comboBoxSerialPorts);
@@ -276,6 +281,26 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "设置";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // chbCounter
+            // 
+            this.chbCounter.AutoSize = true;
+            this.chbCounter.Location = new System.Drawing.Point(172, 23);
+            this.chbCounter.Name = "chbCounter";
+            this.chbCounter.Size = new System.Drawing.Size(75, 21);
+            this.chbCounter.TabIndex = 26;
+            this.chbCounter.Text = "收发计数";
+            this.chbCounter.UseVisualStyleBackColor = true;
+            // 
+            // chbConsole
+            // 
+            this.chbConsole.AutoSize = true;
+            this.chbConsole.Location = new System.Drawing.Point(172, 6);
+            this.chbConsole.Name = "chbConsole";
+            this.chbConsole.Size = new System.Drawing.Size(87, 21);
+            this.chbConsole.TabIndex = 25;
+            this.chbConsole.Text = "控制台显示";
+            this.chbConsole.UseVisualStyleBackColor = true;
             // 
             // comboBoxParity
             // 
@@ -508,25 +533,27 @@
             this.btnClose.UseVisualStyleBackColor = true;
             this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
-            // button3
+            // btnBuzzon
             // 
-            this.button3.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.button3.Location = new System.Drawing.Point(9, 148);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(67, 23);
-            this.button3.TabIndex = 76;
-            this.button3.Text = "鸣笛警报";
-            this.button3.UseVisualStyleBackColor = true;
+            this.btnBuzzon.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnBuzzon.Location = new System.Drawing.Point(9, 148);
+            this.btnBuzzon.Name = "btnBuzzon";
+            this.btnBuzzon.Size = new System.Drawing.Size(67, 23);
+            this.btnBuzzon.TabIndex = 76;
+            this.btnBuzzon.Text = "鸣笛警报";
+            this.btnBuzzon.UseVisualStyleBackColor = true;
+            this.btnBuzzon.Click += new System.EventHandler(this.btnBuzzon_Click);
             // 
-            // button4
+            // btnBuzzoff
             // 
-            this.button4.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.button4.Location = new System.Drawing.Point(9, 172);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(67, 23);
-            this.button4.TabIndex = 77;
-            this.button4.Text = "关闭警报";
-            this.button4.UseVisualStyleBackColor = true;
+            this.btnBuzzoff.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnBuzzoff.Location = new System.Drawing.Point(9, 172);
+            this.btnBuzzoff.Name = "btnBuzzoff";
+            this.btnBuzzoff.Size = new System.Drawing.Size(67, 23);
+            this.btnBuzzoff.TabIndex = 77;
+            this.btnBuzzoff.Text = "关闭警报";
+            this.btnBuzzoff.UseVisualStyleBackColor = true;
+            this.btnBuzzoff.Click += new System.EventHandler(this.btnBuzzoff_Click);
             // 
             // button5
             // 
@@ -539,6 +566,10 @@
             this.button5.UseVisualStyleBackColor = true;
             this.button5.Click += new System.EventHandler(this.lbState_Click);
             // 
+            // timerCheck
+            // 
+            this.timerCheck.Tick += new System.EventHandler(this.timerCheck_Tick);
+            // 
             // Alarm_Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -546,8 +577,8 @@
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(644, 272);
             this.Controls.Add(this.button5);
-            this.Controls.Add(this.button4);
-            this.Controls.Add(this.button3);
+            this.Controls.Add(this.btnBuzzoff);
+            this.Controls.Add(this.btnBuzzon);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.lbState);
             this.Controls.Add(this.lbConn);
@@ -564,6 +595,7 @@
             this.Controls.Add(this.statusStrip1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
             this.Name = "Alarm_Form";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "基于Verilog的大件贵重物品安保系统";
@@ -625,9 +657,12 @@
         private System.Windows.Forms.Label lbIllum;
         private System.Windows.Forms.Label lbState;
         private System.Windows.Forms.Button btnClose;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button btnBuzzon;
+        private System.Windows.Forms.Button btnBuzzoff;
         private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Timer timerCheck;
+        private System.Windows.Forms.CheckBox chbCounter;
+        private System.Windows.Forms.CheckBox chbConsole;
     }
 }
 
