@@ -3,7 +3,14 @@ using System.Linq;
 
 namespace AlarmSystem.BLL
 {
-    public abstract class Smoother
+    public interface ISmoother
+    {
+        double CurrentValue { get; }
+
+        double Update(double newValue);
+    }
+
+    public abstract class Smoother : ISmoother
     {
         public double CurrentValue { get; protected set; }
 

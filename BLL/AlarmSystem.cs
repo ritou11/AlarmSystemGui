@@ -28,7 +28,7 @@ namespace AlarmSystem.BLL
     {
         private const int MaxDist = 50;
         private const int MaxIllum = 1;
-        private const double MaxAcc = 20;
+        private const double MaxAcc = 40;
 
         public event UpdateEventHandler Update;
         public event ConnLostEventHandler ConnLost;
@@ -65,9 +65,9 @@ namespace AlarmSystem.BLL
         private readonly AsyncSerialPort m_Port;
         private readonly Timer m_Watchdog;
 
-        private readonly Smoother m_IllumSmoother;
-        private readonly MovingAverageEventDetecter m_AccSmoother;
-        private readonly Smoother m_DistSmoother;
+        private readonly ISmoother m_IllumSmoother;
+        private readonly IEventDetecter m_AccSmoother;
+        private readonly ISmoother m_DistSmoother;
 
         public AlarmSystem()
         {
@@ -110,7 +110,7 @@ namespace AlarmSystem.BLL
             m_Watchdog.Elapsed += Watchdog_Triggered;
 
             m_IllumSmoother = new ExponentSmoother(0.2);
-            m_AccSmoother = new MovingAverageEventDetecter(5, MaxAcc);
+            m_AccSmoother = new CuSumEventDetecter(0.5, MaxAcc);
             m_DistSmoother = new MedianSmoother();
 
             m_Port = new AsyncSerialPort(TheProfile, 12) { StartMark = 0x5a };
