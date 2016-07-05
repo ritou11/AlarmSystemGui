@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO.Ports;
 using System.Timers;
 using AlarmSystem.DAL;
@@ -25,11 +26,9 @@ namespace AlarmSystem.BLL
 
     public class AlarmSystem
     {
-        private const int MAX_DIST = 50;
-        private const int MAX_ILLUM = 1;
-        private const double MID_ACC = 1.0;
-        private const double MAX_DACC = 0.02;
-        private Smoother smoother;
+        private const int MaxDist = 50;
+        private const int MaxIllum = 1;
+        private const double MaxAcc = 20;
 
         public event UpdateEventHandler Update;
         public event ConnLostEventHandler ConnLost;
@@ -65,6 +64,10 @@ namespace AlarmSystem.BLL
 
         private readonly AsyncSerialPort m_Port;
         private readonly Timer m_Watchdog;
+
+        private readonly Smoother m_IllumSmoother;
+        private readonly MovingAverageEventDetecter m_AccSmoother;
+        private readonly Smoother m_DistSmoother;
 
         public AlarmSystem()
         {
@@ -106,7 +109,11 @@ namespace AlarmSystem.BLL
             m_Watchdog = new Timer(WatchDogTimeout.TotalMilliseconds) { AutoReset = false };
             m_Watchdog.Elapsed += Watchdog_Triggered;
 
-            m_Port = new AsyncSerialPort(TheProfile, 8) { StartMark = 0x5a };
+            m_IllumSmoother = new ExponentSmoother(0.2);
+            m_AccSmoother = new MovingAverageEventDetecter(5, MaxAcc);
+            m_DistSmoother = new MedianSmoother();
+
+            m_Port = new AsyncSerialPort(TheProfile, 12) { StartMark = 0x5a };
             m_Port.OpenPort += Port_Open;
             m_Port.ClosePort += Port_Close;
             m_Port.PackageArrived += Port_Package;
@@ -137,8 +144,6 @@ namespace AlarmSystem.BLL
 
             if (!m_Port.Open(TheProfile, DefaultTimeout))
                 OpenPortResult?.Invoke(new TimeoutException("打开端口失败"));
-
-            smoother = new Smoother();
         }
 
         public void ClosePort()
@@ -156,11 +161,11 @@ namespace AlarmSystem.BLL
         {
             var old = RealState;
             RealState = AlarmingState.None;
-            if (report.Distance > MAX_DIST)
+            if (report.Distance > MaxDist)
                 RealState |= AlarmingState.Level1;
-            if (report.Illuminance > MAX_ILLUM)
+            if (report.Illuminance > MaxIllum)
                 RealState |= AlarmingState.Level2;
-            if (Math.Abs(report.Acceleration - MID_ACC) > MAX_DACC)
+            if (m_AccSmoother.Occured)
                 RealState |= AlarmingState.Level3;
             if (ConnectivityEnabled)
             {
@@ -199,16 +204,26 @@ namespace AlarmSystem.BLL
 
         private void Port_Error(Exception e) => Error?.Invoke(e);
 
-        private int Port_Package(byte[] package)
+        private bool Port_Package(IList<byte> package)
         {
-            int lastPackageTail;
-            var report = smoother.Smooth(Packer.ParseReport(package, out lastPackageTail));
-            if (report == null)
-                //Error?.Invoke(new ApplicationException("校验字错误"));
-                return -1;
+            var rawReport = Packer.ParseReport(package);
+            if (rawReport == null)
+                return false;
+
+            var report =
+                new Report
+                    {
+                        Illuminance = m_IllumSmoother.Update(rawReport.Illuminance),
+                        Acceleration = m_AccSmoother.Update(rawReport.Acceleration),
+                        Distance = m_DistSmoother.Update(rawReport.Distance),
+                        IsBuzzerOn = rawReport.IsBuzzerOn,
+                        RawBytes = rawReport.RawBytes,
+                        TimeStamp = rawReport.TimeStamp
+                    };
+
             CheckAlarm(report);
             Update?.Invoke(report);
-            return lastPackageTail;
+            return true;
         }
 
         private void Port_Open(Exception e)

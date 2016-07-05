@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BLL\AlarmSystem.cs" />
+    <Compile Include="BLL\EventDetecter.cs" />
     <Compile Include="BLL\Smoother.cs" />
     <Compile Include="DAL\AsyncSerialPort.cs" />
     <Compile Include="DAL\Packer.cs" />

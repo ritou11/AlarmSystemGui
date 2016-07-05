@@ -212,7 +212,7 @@ namespace AlarmSystem
             UpdateState();
         }
 
-        public void UpdateState()
+        private void UpdateState()
         {
             if (m_Manager.State.HasFlag(AlarmingState.Unarmed))
             {
@@ -287,14 +287,14 @@ namespace AlarmSystem
         private void btnSettings_Click(object sender, EventArgs e)
         {
             m_ShowConsole ^= true;
-            ActiveForm.SuspendLayout();
-            if (ActiveForm.Size != ActiveForm.MaximumSize)
+            SuspendLayout();
+            if (WindowState == FormWindowState.Normal)
                 if (!m_ShowConsole)
-                    ActiveForm.Width = tableLayoutPanel1.Width + 16;
+                    Width = Width - tabSettings.Width;
                 else
-                    ActiveForm.Width = tableLayoutPanel1.Width + tabSettings.Width + 16;
+                    Width = Width + tabSettings.Width;
             tabSettings.Visible = m_ShowConsole;
-            ActiveForm.ResumeLayout();
+            ResumeLayout();
         }
 
         private void lblDist_Click(object sender, EventArgs e)
