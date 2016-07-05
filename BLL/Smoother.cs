@@ -1,38 +1,40 @@
-﻿using System;
-using System.Collections;
-using AlarmSystem.Entities;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace AlarmSystem.BLL
 {
-    internal class Smoother
+    public abstract class Smoother
     {
-        private readonly Queue q_dist = new Queue();
-        private double last_acc = 1.0;
+        public double CurrentValue { get; protected set; }
 
-        private double GetMedian(double[] sourceNumbers)
-        {
-            if (sourceNumbers == null ||
-                sourceNumbers.Length == 0)
-                throw new Exception("Median of empty array not defined.");
-            double[] sortedPNumbers = (double[])sourceNumbers.Clone();
-            Array.Sort(sortedPNumbers);
-            int size = sortedPNumbers.Length;
-            int mid = size / 2;
-            double median = (size % 2 != 0) ? sortedPNumbers[mid] : (sortedPNumbers[mid] + sortedPNumbers[mid - 1]) / 2;
-            return median;
-        }
+        protected Smoother() { CurrentValue = double.NaN; }
 
-        public Report Smooth(Report tosmooth)
+        public abstract double Update(double newValue);
+    }
+
+    public class MedianSmoother : Smoother
+    {
+        private readonly Queue<double> m_Queue = new Queue<double>();
+
+        public override double Update(double newValue)
         {
-            if (tosmooth == null)
-                return null;
-            if (q_dist.Count >= 5)
-                q_dist.Dequeue();
-            q_dist.Enqueue(tosmooth.Distance);
-            tosmooth.Distance = GetMedian(Array.ConvertAll(q_dist.ToArray(), o => (double)o));
-            last_acc = 0.7 * last_acc + 0.3 * tosmooth.Acceleration;
-            tosmooth.Acceleration = last_acc;
-            return tosmooth;
+            m_Queue.Enqueue(newValue);
+
+            var sourceNumbers = m_Queue.ToList();
+            sourceNumbers.Sort();
+            var size = sourceNumbers.Count;
+            var mid = size / 2;
+            var median = (size % 2 != 0) ? sourceNumbers[mid] : (sourceNumbers[mid] + sourceNumbers[mid - 1]) / 2;
+            return CurrentValue = median;
         }
+    }
+
+    public class ExponentSmoother : Smoother
+    {
+        public double Coefficient { get; set; }
+
+        public ExponentSmoother(double coeficient = 0.7) { Coefficient = coeficient; }
+
+        public override double Update(double newValue) => CurrentValue = 0.7 * CurrentValue + 0.3 * newValue;
     }
 }
