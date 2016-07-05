@@ -44,6 +44,7 @@
             this.lblIllumValue = new System.Windows.Forms.Label();
             this.lblIllum = new System.Windows.Forms.Label();
             this.lblShakeValue = new System.Windows.Forms.Label();
+            this.btnClear = new System.Windows.Forms.Button();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.tslError = new System.Windows.Forms.ToolStripStatusLabel();
             this.tslState = new System.Windows.Forms.ToolStripStatusLabel();
@@ -110,9 +111,9 @@
             this.lblState.Font = new System.Drawing.Font("微软雅黑", 42F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.lblState.Location = new System.Drawing.Point(130, 139);
-            this.lblState.Margin = new System.Windows.Forms.Padding(7, 7, 7, 7);
+            this.lblState.Margin = new System.Windows.Forms.Padding(7);
             this.lblState.Name = "lblState";
-            this.tableLayoutPanel1.SetRowSpan(this.lblState, 4);
+            this.tableLayoutPanel1.SetRowSpan(this.lblState, 5);
             this.lblState.Size = new System.Drawing.Size(356, 248);
             this.lblState.TabIndex = 74;
             this.lblState.Text = "AA级警报";
@@ -121,10 +122,10 @@
             // btnBuzz
             // 
             this.btnBuzz.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnBuzz.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnBuzz.Font = new System.Drawing.Font("宋体", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnBuzz.Location = new System.Drawing.Point(3, 135);
             this.btnBuzz.Name = "btnBuzz";
-            this.btnBuzz.Size = new System.Drawing.Size(117, 59);
+            this.btnBuzz.Size = new System.Drawing.Size(117, 46);
             this.btnBuzz.TabIndex = 6;
             this.btnBuzz.Text = "启动蜂鸣器";
             this.btnBuzz.UseVisualStyleBackColor = true;
@@ -133,10 +134,10 @@
             // btnIgnore
             // 
             this.btnIgnore.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnIgnore.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnIgnore.Location = new System.Drawing.Point(3, 265);
+            this.btnIgnore.Font = new System.Drawing.Font("宋体", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnIgnore.Location = new System.Drawing.Point(3, 239);
             this.btnIgnore.Name = "btnIgnore";
-            this.btnIgnore.Size = new System.Drawing.Size(117, 59);
+            this.btnIgnore.Size = new System.Drawing.Size(117, 46);
             this.btnIgnore.TabIndex = 8;
             this.btnIgnore.Text = "忽略警报";
             this.btnIgnore.UseVisualStyleBackColor = true;
@@ -145,12 +146,12 @@
             // btnSettings
             // 
             this.btnSettings.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnSettings.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnSettings.Location = new System.Drawing.Point(3, 330);
+            this.btnSettings.Font = new System.Drawing.Font("宋体", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnSettings.Location = new System.Drawing.Point(3, 343);
             this.btnSettings.Name = "btnSettings";
-            this.btnSettings.Size = new System.Drawing.Size(117, 61);
+            this.btnSettings.Size = new System.Drawing.Size(117, 48);
             this.btnSettings.TabIndex = 9;
-            this.btnSettings.Text = "高级选项";
+            this.btnSettings.Text = "切换显示";
             this.btnSettings.UseVisualStyleBackColor = true;
             this.btnSettings.Click += new System.EventHandler(this.btnSettings_Click);
             // 
@@ -161,7 +162,7 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 75F));
             this.tableLayoutPanel1.Controls.Add(this.btnUnbuzz, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.lblConnValue, 1, 3);
-            this.tableLayoutPanel1.Controls.Add(this.btnSettings, 0, 7);
+            this.tableLayoutPanel1.Controls.Add(this.btnSettings, 0, 8);
             this.tableLayoutPanel1.Controls.Add(this.lblConn, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.btnIgnore, 0, 6);
             this.tableLayoutPanel1.Controls.Add(this.lblShake, 0, 2);
@@ -172,28 +173,31 @@
             this.tableLayoutPanel1.Controls.Add(this.lblDistValue, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblShakeValue, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.lblState, 1, 4);
+            this.tableLayoutPanel1.Controls.Add(this.btnClear, 0, 7);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 8;
+            this.tableLayoutPanel1.RowCount = 9;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 33F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 33F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 33F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 33F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(493, 394);
             this.tableLayoutPanel1.TabIndex = 79;
             // 
             // btnUnbuzz
             // 
             this.btnUnbuzz.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnUnbuzz.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnUnbuzz.Location = new System.Drawing.Point(3, 200);
+            this.btnUnbuzz.Font = new System.Drawing.Font("宋体", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnUnbuzz.Location = new System.Drawing.Point(3, 187);
             this.btnUnbuzz.Name = "btnUnbuzz";
-            this.btnUnbuzz.Size = new System.Drawing.Size(117, 59);
+            this.btnUnbuzz.Size = new System.Drawing.Size(117, 46);
             this.btnUnbuzz.TabIndex = 7;
             this.btnUnbuzz.Text = "关闭蜂鸣器";
             this.btnUnbuzz.UseVisualStyleBackColor = true;
@@ -271,6 +275,18 @@
             this.lblShakeValue.Text = "无数据";
             this.lblShakeValue.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // btnClear
+            // 
+            this.btnClear.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnClear.Font = new System.Drawing.Font("宋体", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnClear.Location = new System.Drawing.Point(3, 291);
+            this.btnClear.Name = "btnClear";
+            this.btnClear.Size = new System.Drawing.Size(117, 46);
+            this.btnClear.TabIndex = 78;
+            this.btnClear.Text = "清空日志";
+            this.btnClear.UseVisualStyleBackColor = true;
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            // 
             // statusStrip1
             // 
             this.statusStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
@@ -316,7 +332,7 @@
             this.tabPage1.Controls.Add(this.txtLog);
             this.tabPage1.Location = new System.Drawing.Point(4, 26);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage1.Size = new System.Drawing.Size(280, 364);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "日志";
@@ -338,7 +354,7 @@
             this.tabPage2.Controls.Add(this.tableLayoutPanel3);
             this.tabPage2.Location = new System.Drawing.Point(4, 26);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage2.Size = new System.Drawing.Size(280, 364);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "设置";
@@ -362,7 +378,7 @@
             this.tableLayoutPanel3.Controls.Add(this.label6, 0, 2);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 3);
-            this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(2);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 7;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 27F));
@@ -577,6 +593,7 @@
         private System.Windows.Forms.ComboBox comboBoxWordLength;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button btnClear;
     }
 }
 
