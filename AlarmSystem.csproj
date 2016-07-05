@@ -7,11 +7,12 @@
     <ProjectGuid>{D31BFC57-82E2-471C-AC3A-7A78A1FF9096}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>alarm</RootNamespace>
+    <RootNamespace>AlarmSystem</RootNamespace>
     <AssemblyName>AlarmSystem</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,7 +34,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <ApplicationIcon>lock_safe_money_vault_cash.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -49,19 +50,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Command.cs" />
-    <Compile Include="Alarm_Main.cs">
+    <Compile Include="BLL\AlarmSystem.cs" />
+    <Compile Include="DAL\AsyncSerialPort.cs" />
+    <Compile Include="DAL\Packer.cs" />
+    <Compile Include="DAL\ProfileKeeper.cs" />
+    <Compile Include="Entities\Report.cs" />
+    <Compile Include="FrmAlarm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Alarm_Main.Designer.cs">
-      <DependentUpon>Alarm_Main.cs</DependentUpon>
+    <Compile Include="FrmAlarm.Designer.cs">
+      <DependentUpon>FrmAlarm.cs</DependentUpon>
     </Compile>
-    <Compile Include="IniFile.cs" />
-    <Compile Include="Profile.cs" />
+    <Compile Include="Entities\Profile.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Alarm_Main.resx">
-      <DependentUpon>Alarm_Main.cs</DependentUpon>
+    <EmbeddedResource Include="FrmAlarm.resx">
+      <DependentUpon>FrmAlarm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -87,7 +91,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="icon.ico" />
+    <Content Include="lock_safe_money_vault_cash.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
