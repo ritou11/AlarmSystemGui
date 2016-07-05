@@ -27,6 +27,8 @@ namespace AlarmSystem.BLL
     {
         private const int MAX_DIST = 50;
         private const int MAX_ILLUM = 1;
+        private const double MID_ACC = 1.0;
+        private const double MAX_DACC = 0.02;
         private Smoother smoother;
 
         public event UpdateEventHandler Update;
@@ -158,7 +160,7 @@ namespace AlarmSystem.BLL
                 RealState |= AlarmingState.Level1;
             if (report.Illuminance > MAX_ILLUM)
                 RealState |= AlarmingState.Level2;
-            if (report.IsShaking)
+            if (Math.Abs(report.Acceleration-MID_ACC)>MAX_DACC)
                 RealState |= AlarmingState.Level3;
             if (ConnectivityEnabled)
             {
@@ -197,16 +199,18 @@ namespace AlarmSystem.BLL
 
         private void Port_Error(Exception e) => Error?.Invoke(e);
 
-        private void Port_Package(byte[] package)
+        private int Port_Package(byte[] package)
         {
-            var report = smoother.Smooth(Packer.ParseReport(package));
+            int lastPackageTail;            
+            var report = smoother.Smooth(Packer.ParseReport(package, out lastPackageTail));
             if (report == null)
             {
-                Error?.Invoke(new ApplicationException("校验字错误"));
-                return;
+                //Error?.Invoke(new ApplicationException("校验字错误"));
+                return -1;
             }
             CheckAlarm(report);
             Update?.Invoke(report);
+            return lastPackageTail;
         }
 
         private void Port_Open(Exception e)

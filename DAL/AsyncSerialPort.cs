@@ -3,10 +3,12 @@ using System.Collections.Concurrent;
 using System.IO.Ports;
 using System.Threading;
 using AlarmSystem.Entities;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace AlarmSystem.DAL
 {
-    public delegate void PackageArrivedEventHandler(byte[] package);
+    public delegate int PackageArrivedEventHandler(byte[] package);
 
     public delegate void OpenPortEventHandler(Exception e);
 
@@ -51,6 +53,8 @@ namespace AlarmSystem.DAL
         private SerialPort m_Port;
         private readonly BlockingCollection<byte[]> m_TxCollection;
         private CancellationTokenSource m_CancelSource;
+
+        private List<byte> m_Buffer;
 
         public bool Open(Profile profile, TimeSpan timeout)
         {
@@ -100,29 +104,27 @@ namespace AlarmSystem.DAL
                         continue;
                     }
 
-
                     var buffer = new byte[PackageLength];
-                    var count = 0;
+                    m_Buffer = new List<byte>();
                     while (true)
                         try
                         {
                             var task =
                                 m_Port.BaseStream.ReadAsync(
                                                             buffer,
-                                                            count,
-                                                            count == 0 ? 1 : PackageLength - count,
+                                                            0,
+                                                            PackageLength,
                                                             m_CancelSource.Token);
                             task.Wait(m_CancelSource.Token);
                             var lng = task.Result;
-                            count = count + lng;
-                            if (count == buffer.Length)
+
+                            m_Buffer.AddRange(buffer.Take(lng));
+                            var lastPackageTail = PackageArrived?.Invoke(m_Buffer.ToArray());
+                            if (lastPackageTail == null) continue;
+                            if (lastPackageTail > 0)
                             {
-                                PackageArrived?.Invoke(buffer);
-                                count = 0;
+                                m_Buffer.RemoveRange(0, (int)lastPackageTail + 1);
                             }
-                            else if (count == 1)
-                                if (buffer[0] != StartMark)
-                                    count = 0;
                         }
                         catch (OperationCanceledException)
                         {

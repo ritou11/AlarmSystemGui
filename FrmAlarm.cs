@@ -114,12 +114,12 @@ namespace AlarmSystem
 
             if (m_Manager.RealState.HasFlag(AlarmingState.Level3))
             {
-                lblShakeValue.Text = "异常";
+                lblShakeValue.Text = report.Acceleration.ToString(CultureInfo.InvariantCulture);
                 lblShakeValue.ForeColor = m_Manager.ShakingEnabled ? Color.Red : Color.Gray;
             }
             else
             {
-                lblShakeValue.Text = "正常";
+                lblShakeValue.Text = report.Acceleration.ToString(CultureInfo.InvariantCulture);
                 lblShakeValue.ForeColor = m_Manager.ShakingEnabled ? Color.Black : Color.Gray;
             }
 

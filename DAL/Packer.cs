@@ -13,24 +13,36 @@ namespace AlarmSystem.DAL
 
     public static class Packer
     {
-        public static Report ParseReport(byte[] buffer)
+        public static Report ParseReport(byte[] buffer, out int lastPackageTail)
         {
-            byte tmp = 0;
-            for (var i = 1; i < 7; i++)
-                tmp = (byte)(tmp ^ buffer[i]);
-            if (tmp != buffer[7])
+            lastPackageTail = -1;
+            int startIndex;
+            for (startIndex = 0; startIndex < buffer.Length; startIndex++)
+            {
+                if (buffer[startIndex] == 0x5A) break;
+            }
+            if (buffer.Length - startIndex < 8)
                 return null;
-            var ldist = (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer, 1));
+            byte tmp = 0;
+            for (var i = startIndex + 1; i < startIndex + 7; i++)
+                tmp = (byte)(tmp ^ buffer[i]);
+            if (tmp != buffer[startIndex + 7])
+                return null;
+
+            lastPackageTail = startIndex + 7;
+
+            var ldist = (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer, startIndex+1));
             var dist = ldist * 40.0 * 170 / 1000000;
 
             return
                 new Report
                 {
                     Distance = dist,
-                    Illuminance = buffer[5],
-                    IsShaking = (buffer[6] & 0x01) == 0x01,
+                    Acceleration = 1.0,
+                    Illuminance = buffer[startIndex+5],
+                    IsShaking = (buffer[startIndex + 6] & 0x01) == 0x01,
                     TimeStamp = DateTime.Now,
-                    IsBuzzerOn = (buffer[6] & 0x02) == 0x02,
+                    IsBuzzerOn = (buffer[startIndex + 6] & 0x02) == 0x02,
                     RawBytes = buffer
                 };
         }

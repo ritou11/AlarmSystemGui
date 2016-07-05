@@ -10,6 +10,8 @@ namespace AlarmSystem.Entities
 
         public double Distance { get; set; }
 
+        public double Acceleration { get; set; }
+
         public DateTime TimeStamp { get; set; }
 
         public bool IsBuzzerOn { get; set; }
