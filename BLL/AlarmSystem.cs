@@ -25,6 +25,10 @@ namespace AlarmSystem.BLL
 
     public class AlarmSystem
     {
+        private const int MAX_DIST = 50;
+        private const int MAX_ILLUM = 1;
+        private Smoother smoother;
+
         public event UpdateEventHandler Update;
         public event ConnLostEventHandler ConnLost;
         public event ErrorEventHandler Error;
@@ -131,6 +135,8 @@ namespace AlarmSystem.BLL
 
             if (!m_Port.Open(TheProfile, DefaultTimeout))
                 OpenPortResult?.Invoke(new TimeoutException("打开端口失败"));
+
+            smoother = new Smoother();
         }
 
         public void ClosePort()
@@ -148,9 +154,9 @@ namespace AlarmSystem.BLL
         {
             var old = RealState;
             RealState = AlarmingState.None;
-            if (report.Distance > 10)
+            if (report.Distance > MAX_DIST)
                 RealState |= AlarmingState.Level1;
-            if (report.Illuminance > 5)
+            if (report.Illuminance > MAX_ILLUM)
                 RealState |= AlarmingState.Level2;
             if (report.IsShaking)
                 RealState |= AlarmingState.Level3;
@@ -193,7 +199,7 @@ namespace AlarmSystem.BLL
 
         private void Port_Package(byte[] package)
         {
-            var report = Packer.ParseReport(package);
+            var report = smoother.Smooth(Packer.ParseReport(package));
             if (report == null)
             {
                 Error?.Invoke(new ApplicationException("校验字错误"));
