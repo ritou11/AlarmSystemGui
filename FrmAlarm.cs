@@ -287,14 +287,14 @@ namespace AlarmSystem
         private void btnSettings_Click(object sender, EventArgs e)
         {
             m_ShowConsole ^= true;
-            FrmAlarm.ActiveForm.SuspendLayout();
-            if(FrmAlarm.ActiveForm.Size!=FrmAlarm.ActiveForm.MaximumSize)
+            ActiveForm.SuspendLayout();
+            if (ActiveForm.Size != ActiveForm.MaximumSize)
                 if (!m_ShowConsole)
-                    FrmAlarm.ActiveForm.Width = tableLayoutPanel1.Width + 16;
+                    ActiveForm.Width = tableLayoutPanel1.Width + 16;
                 else
-                    FrmAlarm.ActiveForm.Width = tableLayoutPanel1.Width + tabSettings.Width + 16;
+                    ActiveForm.Width = tableLayoutPanel1.Width + tabSettings.Width + 16;
             tabSettings.Visible = m_ShowConsole;
-            FrmAlarm.ActiveForm.ResumeLayout();
+            ActiveForm.ResumeLayout();
         }
 
         private void lblDist_Click(object sender, EventArgs e)
@@ -308,9 +308,6 @@ namespace AlarmSystem
         private void lblConn_Click(object sender, EventArgs e)
             => m_Manager.ConnectivityEnabled = !m_Manager.ConnectivityEnabled;
 
-        private void btnClear_Click(object sender, EventArgs e)
-        {
-            txtLog.Text = "";
-        }
+        private void btnClear_Click(object sender, EventArgs e) { txtLog.Text = ""; }
     }
 }

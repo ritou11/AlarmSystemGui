@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO.Ports;
+using System.Linq;
 using System.Threading;
 using AlarmSystem.Entities;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace AlarmSystem.DAL
 {
@@ -120,11 +120,10 @@ namespace AlarmSystem.DAL
 
                             m_Buffer.AddRange(buffer.Take(lng));
                             var lastPackageTail = PackageArrived?.Invoke(m_Buffer.ToArray());
-                            if (lastPackageTail == null) continue;
+                            if (lastPackageTail == null)
+                                continue;
                             if (lastPackageTail > 0)
-                            {
                                 m_Buffer.RemoveRange(0, (int)lastPackageTail + 1);
-                            }
                         }
                         catch (OperationCanceledException)
                         {

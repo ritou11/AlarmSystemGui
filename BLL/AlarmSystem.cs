@@ -160,7 +160,7 @@ namespace AlarmSystem.BLL
                 RealState |= AlarmingState.Level1;
             if (report.Illuminance > MAX_ILLUM)
                 RealState |= AlarmingState.Level2;
-            if (Math.Abs(report.Acceleration-MID_ACC)>MAX_DACC)
+            if (Math.Abs(report.Acceleration - MID_ACC) > MAX_DACC)
                 RealState |= AlarmingState.Level3;
             if (ConnectivityEnabled)
             {
@@ -201,13 +201,11 @@ namespace AlarmSystem.BLL
 
         private int Port_Package(byte[] package)
         {
-            int lastPackageTail;            
+            int lastPackageTail;
             var report = smoother.Smooth(Packer.ParseReport(package, out lastPackageTail));
             if (report == null)
-            {
                 //Error?.Invoke(new ApplicationException("校验字错误"));
                 return -1;
-            }
             CheckAlarm(report);
             Update?.Invoke(report);
             return lastPackageTail;
