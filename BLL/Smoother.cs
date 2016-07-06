@@ -1,38 +1,78 @@
-﻿using System;
-using System.Collections;
-using AlarmSystem.Entities;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AlarmSystem.BLL
 {
-    class Smoother
+    public interface ISmoother
     {
-        private Queue q_dist = new Queue();
-        private double last_acc=1.0;
+        double CurrentValue { get; }
 
-        private double GetMedian(double[] sourceNumbers)
-        {     
-            if (sourceNumbers == null || sourceNumbers.Length == 0)
-                throw new System.Exception("Median of empty array not defined.");            
-            double[] sortedPNumbers = (double[])sourceNumbers.Clone();
-            Array.Sort(sortedPNumbers);
-            int size = sortedPNumbers.Length;
-            int mid = size / 2;
-            double median = (size % 2 != 0) ? (double)sortedPNumbers[mid] : ((double)sortedPNumbers[mid] + (double)sortedPNumbers[mid - 1]) / 2;
-            return median;
-        }
-        public Report Smooth(Report tosmooth)
+        double Update(double newValue);
+    }
+
+    public abstract class Smoother : ISmoother
+    {
+        public double CurrentValue { get; protected set; }
+
+        protected Smoother() { CurrentValue = double.NaN; }
+
+        public abstract double Update(double newValue);
+    }
+
+    public abstract class QueueSmoother : Smoother
+    {
+        public int MaxItem { get; set; }
+
+        public QueueSmoother(int maxItem = 5) { MaxItem = maxItem; }
+
+        protected readonly Queue<double> m_Queue = new Queue<double>();
+
+        public abstract void CalculateCurrentValue();
+
+        public override double Update(double newValue)
         {
-            if (tosmooth == null) return null;
-            if (q_dist.Count >= 5) q_dist.Dequeue();
-            q_dist.Enqueue(tosmooth.Distance);
-            tosmooth.Distance = GetMedian(Array.ConvertAll<Object, Double>(q_dist.ToArray(), o => (double)o));
-            last_acc = 0.7 * last_acc + 0.3*tosmooth.Acceleration;
-            tosmooth.Acceleration = last_acc;
-            return tosmooth;
+            m_Queue.Enqueue(newValue);
+            while (m_Queue.Count > MaxItem)
+                m_Queue.Dequeue();
+
+            CalculateCurrentValue();
+            return CurrentValue;
+        }
+    }
+
+    public class MedianSmoother : QueueSmoother
+    {
+        public MedianSmoother(int maxItem = 5) : base(maxItem) { }
+
+        public override void CalculateCurrentValue()
+        {
+            var sourceNumbers = m_Queue.ToList();
+            sourceNumbers.Sort();
+            var size = sourceNumbers.Count;
+            var mid = size / 2;
+            var median = (size % 2 != 0) ? sourceNumbers[mid] : (sourceNumbers[mid] + sourceNumbers[mid - 1]) / 2;
+            CurrentValue = median;
+        }
+    }
+
+    public class MovingAverageSmoother : QueueSmoother
+    {
+        public MovingAverageSmoother(int maxItem = 5) : base(maxItem) { }
+
+        public override void CalculateCurrentValue() => CurrentValue = m_Queue.Average();
+    }
+
+    public class ExponentSmoother : Smoother
+    {
+        public double Coefficient { get; set; }
+
+        public ExponentSmoother(double coeficient = 0.7) { Coefficient = coeficient; }
+
+        public override double Update(double newValue)
+        {
+            if (double.IsNaN(CurrentValue))
+                return CurrentValue = newValue;
+            return CurrentValue = Coefficient * CurrentValue + (1 - Coefficient) * newValue;
         }
     }
 }

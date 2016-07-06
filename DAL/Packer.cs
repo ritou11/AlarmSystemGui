@@ -1,7 +1,8 @@
 ﻿using System;
-using AlarmSystem.Entities;
-using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using AlarmSystem.Entities;
 
 namespace AlarmSystem.DAL
 {
@@ -13,38 +14,42 @@ namespace AlarmSystem.DAL
 
     public static class Packer
     {
-        public static Report ParseReport(byte[] buffer, out int lastPackageTail)
+        private static uint ToUInt32Network(byte[] buffer, int startIndex)
+            => (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer, startIndex));
+
+        public static Report ParseReport(IList<byte> buffer)
         {
-            lastPackageTail = -1;
             int startIndex;
-            for (startIndex = 0; startIndex < buffer.Length; startIndex++)
-            {
-                if (buffer[startIndex] == 0x5A) break;
-            }
-            if (buffer.Length - startIndex < 8)
+            for (startIndex = 0; startIndex < buffer.Count; startIndex++)
+                if (buffer[startIndex] == 0x5A)
+                    break;
+            if (buffer.Count - startIndex < 12)
                 return null;
+
             byte tmp = 0;
-            for (var i = startIndex + 1; i < startIndex + 7; i++)
+            for (var i = startIndex; i < startIndex + 11; i++)
                 tmp = (byte)(tmp ^ buffer[i]);
-            if (tmp != buffer[startIndex + 7])
+            if (tmp != buffer[startIndex + 11])
                 return null;
 
-            lastPackageTail = startIndex + 7;
+            var rawBuffer = buffer.ToArray();
 
-            var ldist = (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer, startIndex+1));
+            var lacc = ToUInt32Network(rawBuffer, startIndex + 2);
+            var acc = Math.Sqrt(lacc);
+
+            var ldist = ToUInt32Network(rawBuffer, startIndex + 6);
             var dist = ldist * 40.0 * 170 / 1000000;
 
             return
                 new Report
-                {
-                    Distance = dist,
-                    Acceleration = 1.0,
-                    Illuminance = buffer[startIndex+5],
-                    IsShaking = (buffer[startIndex + 6] & 0x01) == 0x01,
-                    TimeStamp = DateTime.Now,
-                    IsBuzzerOn = (buffer[startIndex + 6] & 0x02) == 0x02,
-                    RawBytes = buffer
-                };
+                    {
+                        Illuminance = buffer[startIndex + 1],
+                        Acceleration = acc,
+                        Distance = dist,
+                        IsBuzzerOn = (buffer[startIndex + 10] & 0x01) == 0x01,
+                        TimeStamp = DateTime.Now,
+                        RawBytes = rawBuffer
+                    };
         }
 
         public static byte[] GenerateManagementPackage(ManagementPackageType type, params object[] param)
@@ -56,7 +61,7 @@ namespace AlarmSystem.DAL
                 case ManagementPackageType.BuzzOff:
                     return new byte[] { 0x99 };
                 default:
-                    throw new ArgumentException("包类型无效", "type");
+                    throw new ArgumentException("包类型无效", nameof(type));
             }
         }
     }
