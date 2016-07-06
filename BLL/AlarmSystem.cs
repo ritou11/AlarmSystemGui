@@ -65,7 +65,6 @@ namespace AlarmSystem.BLL
         private readonly AsyncSerialPort m_Port;
         private readonly Timer m_Watchdog;
 
-        private readonly ISmoother m_IllumSmoother;
         private readonly IEventDetecter m_AccSmoother;
         private readonly ISmoother m_DistSmoother;
 
@@ -109,9 +108,8 @@ namespace AlarmSystem.BLL
             m_Watchdog = new Timer(WatchDogTimeout.TotalMilliseconds) { AutoReset = false };
             m_Watchdog.Elapsed += Watchdog_Triggered;
 
-            m_IllumSmoother = new ExponentSmoother(0.2);
             m_AccSmoother = new CuSumEventDetecter(0.5, MaxAcc);
-            m_DistSmoother = new MedianSmoother();
+            m_DistSmoother = new MinSmoother();
 
             m_Port = new AsyncSerialPort(TheProfile, 12) { StartMark = 0x5a };
             m_Port.OpenPort += Port_Open;
@@ -167,9 +165,9 @@ namespace AlarmSystem.BLL
                 RealState |= AlarmingState.Level2;
             if (m_AccSmoother.Occured)
                 RealState |= AlarmingState.Level3;
+            m_Watchdog.Stop();
             if (ConnectivityEnabled)
-            {
-                m_Watchdog.Stop();
+            {                
                 m_Watchdog.Start();
             }
 
@@ -213,7 +211,7 @@ namespace AlarmSystem.BLL
             var report =
                 new Report
                     {
-                        Illuminance = m_IllumSmoother.Update(rawReport.Illuminance),
+                        Illuminance = rawReport.Illuminance,
                         Acceleration = m_AccSmoother.Update(rawReport.Acceleration),
                         Distance = m_DistSmoother.Update(rawReport.Distance),
                         IsBuzzerOn = rawReport.IsBuzzerOn,
