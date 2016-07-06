@@ -14,6 +14,8 @@ namespace AlarmSystem
     {
         private readonly BLL.AlarmSystem m_Manager;
         private bool m_ShowConsole = true;
+        private bool m_EnableBuzzer = false;
+        private bool m_ActBuzzer = true;
 
         public FrmAlarm()
         {
@@ -42,13 +44,13 @@ namespace AlarmSystem
             {
                 var profile =
                     new Profile
-                        {
-                            Name = comboBoxSerialPorts.Text,
-                            BaudRate = Convert.ToInt32(comboBoxBaudRate.Text),
-                            DataBits = Convert.ToInt32(comboBoxWordLength.Text),
-                            StopBits = (StopBits)Enum.Parse(typeof(StopBits), comboBoxStopBits.Text),
-                            Parity = (Parity)Enum.Parse(typeof(Parity), comboBoxParity.Text)
-                        };
+                    {
+                        Name = comboBoxSerialPorts.Text,
+                        BaudRate = Convert.ToInt32(comboBoxBaudRate.Text),
+                        DataBits = Convert.ToInt32(comboBoxWordLength.Text),
+                        StopBits = (StopBits)Enum.Parse(typeof(StopBits), comboBoxStopBits.Text),
+                        Parity = (Parity)Enum.Parse(typeof(Parity), comboBoxParity.Text)
+                    };
                 m_Manager.TheProfile = profile;
                 return true;
             }
@@ -92,12 +94,12 @@ namespace AlarmSystem
 
             if (m_Manager.RealState.HasFlag(AlarmingState.Level1))
             {
-                lblDistValue.Text = report.Distance.ToString(CultureInfo.InvariantCulture);
+                lblDistValue.Text = report.Distance.ToString("0.00");
                 lblDistValue.ForeColor = m_Manager.DistanceEnabled ? Color.Red : Color.Gray;
             }
             else
             {
-                lblDistValue.Text = report.Distance.ToString(CultureInfo.InvariantCulture);
+                lblDistValue.Text = report.Distance.ToString("0.00");
                 lblDistValue.ForeColor = m_Manager.DistanceEnabled ? Color.Black : Color.Gray;
             }
 
@@ -114,14 +116,18 @@ namespace AlarmSystem
 
             if (m_Manager.RealState.HasFlag(AlarmingState.Level3))
             {
-                lblShakeValue.Text = report.Acceleration.ToString(CultureInfo.InvariantCulture);
+                lblShakeValue.Text = report.Acceleration.ToString("0.00");
                 lblShakeValue.ForeColor = m_Manager.ShakingEnabled ? Color.Red : Color.Gray;
             }
             else
             {
-                lblShakeValue.Text = report.Acceleration.ToString(CultureInfo.InvariantCulture);
+                lblShakeValue.Text = report.Acceleration.ToString("0.00");
                 lblShakeValue.ForeColor = m_Manager.ShakingEnabled ? Color.Black : Color.Gray;
             }
+
+            m_ActBuzzer = report.IsBuzzerOn;
+            btnActBuzz.Text = m_ActBuzzer ? "关闭蜂鸣器" : "打开蜂鸣器";
+
             if (chbLog.Checked)
             {
                 var sb = new StringBuilder();
@@ -224,16 +230,22 @@ namespace AlarmSystem
             else if (m_Manager.State.HasFlag(AlarmingState.Level4))
             {
                 lblState.Text = "AA级警报";
+                if (m_EnableBuzzer)
+                    m_Manager.SendManagementPackage(ManagementPackageType.BuzzOn);
                 lblState.BackColor = Color.Red;
             }
             else if (m_Manager.State.HasFlag(AlarmingState.Level3))
             {
                 lblState.Text = "A级警报";
+                if (m_EnableBuzzer)
+                    m_Manager.SendManagementPackage(ManagementPackageType.BuzzOn);
                 lblState.BackColor = Color.Orange;
             }
             else if (m_Manager.State.HasFlag(AlarmingState.Level2))
             {
                 lblState.Text = "B级警报";
+                if (m_EnableBuzzer)
+                    m_Manager.SendManagementPackage(ManagementPackageType.BuzzOn);
                 lblState.BackColor = Color.Gold;
             }
             else if (m_Manager.State.HasFlag(AlarmingState.Level1))
@@ -278,10 +290,20 @@ namespace AlarmSystem
         private void AlarmSystem_FormClosing(object sender, FormClosingEventArgs e) => m_Manager.ClosePort();
 
         private void btnBuzz_Click(object sender, EventArgs e)
-            => m_Manager.SendManagementPackage(ManagementPackageType.BuzzOn);
+        {
+            m_EnableBuzzer = !m_EnableBuzzer;
+            btnBuzz.Text = m_EnableBuzzer ? "禁用蜂鸣器" : "启用蜂鸣器";
+            btnActBuzz.Enabled = m_EnableBuzzer;
+            if (m_ActBuzzer && !m_EnableBuzzer) m_Manager.SendManagementPackage(ManagementPackageType.BuzzOff);
+        }
 
-        private void btnUnbuzz_Click(object sender, EventArgs e)
-            => m_Manager.SendManagementPackage(ManagementPackageType.BuzzOff);
+        private void btnActBuzz_Click(object sender, EventArgs e)
+        {
+            if (m_ActBuzzer)
+                m_Manager.SendManagementPackage(ManagementPackageType.BuzzOff);
+            else m_Manager.SendManagementPackage(ManagementPackageType.BuzzOn);
+        }
+
 
         private void btnIgnore_Click(object sender, EventArgs e)
             => m_Manager.IgnoreAlarm();

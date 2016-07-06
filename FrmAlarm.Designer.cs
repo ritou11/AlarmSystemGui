@@ -37,7 +37,7 @@
             this.btnIgnore = new System.Windows.Forms.Button();
             this.btnSettings = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.btnUnbuzz = new System.Windows.Forms.Button();
+            this.btnActBuzz = new System.Windows.Forms.Button();
             this.lblConnValue = new System.Windows.Forms.Label();
             this.lblConn = new System.Windows.Forms.Label();
             this.lblShake = new System.Windows.Forms.Label();
@@ -128,7 +128,7 @@
             this.btnBuzz.Name = "btnBuzz";
             this.btnBuzz.Size = new System.Drawing.Size(117, 46);
             this.btnBuzz.TabIndex = 6;
-            this.btnBuzz.Text = "启动蜂鸣器";
+            this.btnBuzz.Text = "启用蜂鸣器";
             this.btnBuzz.UseVisualStyleBackColor = true;
             this.btnBuzz.Click += new System.EventHandler(this.btnBuzz_Click);
             // 
@@ -161,7 +161,7 @@
             this.tableLayoutPanel1.ColumnCount = 2;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 75F));
-            this.tableLayoutPanel1.Controls.Add(this.btnUnbuzz, 0, 5);
+            this.tableLayoutPanel1.Controls.Add(this.btnActBuzz, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.lblConnValue, 1, 3);
             this.tableLayoutPanel1.Controls.Add(this.btnSettings, 0, 8);
             this.tableLayoutPanel1.Controls.Add(this.lblConn, 0, 3);
@@ -192,17 +192,18 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(493, 394);
             this.tableLayoutPanel1.TabIndex = 79;
             // 
-            // btnUnbuzz
+            // btnActBuzz
             // 
-            this.btnUnbuzz.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnUnbuzz.Font = new System.Drawing.Font("宋体", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnUnbuzz.Location = new System.Drawing.Point(3, 187);
-            this.btnUnbuzz.Name = "btnUnbuzz";
-            this.btnUnbuzz.Size = new System.Drawing.Size(117, 46);
-            this.btnUnbuzz.TabIndex = 7;
-            this.btnUnbuzz.Text = "关闭蜂鸣器";
-            this.btnUnbuzz.UseVisualStyleBackColor = true;
-            this.btnUnbuzz.Click += new System.EventHandler(this.btnUnbuzz_Click);
+            this.btnActBuzz.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnActBuzz.Enabled = false;
+            this.btnActBuzz.Font = new System.Drawing.Font("宋体", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnActBuzz.Location = new System.Drawing.Point(3, 187);
+            this.btnActBuzz.Name = "btnActBuzz";
+            this.btnActBuzz.Size = new System.Drawing.Size(117, 46);
+            this.btnActBuzz.TabIndex = 7;
+            this.btnActBuzz.Text = "打开蜂鸣器";
+            this.btnActBuzz.UseVisualStyleBackColor = true;
+            this.btnActBuzz.Click += new System.EventHandler(this.btnActBuzz_Click);
             // 
             // lblConnValue
             // 
@@ -592,7 +593,7 @@
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel tslError;
         private System.Windows.Forms.ToolStripStatusLabel tslState;
-        private System.Windows.Forms.Button btnUnbuzz;
+        private System.Windows.Forms.Button btnActBuzz;
         private System.Windows.Forms.TabControl tabSettings;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TextBox txtLog;

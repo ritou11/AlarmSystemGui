@@ -194,7 +194,7 @@ namespace AlarmSystem.BLL
         {
             if (State == AlarmingState.Unarmed)
                 return;
-
+            SendManagementPackage(ManagementPackageType.BuzzOff);
             State = AlarmingState.None;
             Update?.Invoke(null);
         }
