@@ -55,14 +55,6 @@ namespace AlarmSystem.BLL
         }
     }
 
-    public class MinSmoother : QueueSmoother
-    {
-        public MinSmoother(int maxItem = 5) : base(maxItem) { }
-
-        public override void CalculateCurrentValue()
-            => CurrentValue = m_Queue.Min();
-    }
-
     public class MovingAverageSmoother : QueueSmoother
     {
         public MovingAverageSmoother(int maxItem = 5) : base(maxItem) { }
@@ -82,5 +74,13 @@ namespace AlarmSystem.BLL
                 return CurrentValue = newValue;
             return CurrentValue = Coefficient * CurrentValue + (1 - Coefficient) * newValue;
         }
+    }
+
+    public class MinSmoother : QueueSmoother
+    {
+        public MinSmoother(int maxItem = 5) : base(maxItem) { }
+
+        public override void CalculateCurrentValue()
+            => CurrentValue = m_Queue.Min();
     }
 }

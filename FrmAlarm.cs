@@ -122,13 +122,15 @@ namespace AlarmSystem
                 lblShakeValue.Text = report.Acceleration.ToString(CultureInfo.InvariantCulture);
                 lblShakeValue.ForeColor = m_Manager.ShakingEnabled ? Color.Black : Color.Gray;
             }
-
-            var sb = new StringBuilder();
-            sb.AppendLine($"RX @ {report.TimeStamp:HH:mm:ss.ffff}:");
-            foreach (var b in report.RawBytes)
-                sb.Append($" {b:x2}");
-            sb.AppendLine();
-            txtLog.AppendText(sb.ToString());
+            if (chbLog.Checked)
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine($"RX @ {report.TimeStamp:HH:mm:ss.ffff}:");
+                foreach (var b in report.RawBytes)
+                    sb.Append($" {b:x2}");
+                sb.AppendLine();
+                txtLog.AppendText(sb.ToString());
+            }
         }
 
         private void ConnLostFromManager()
@@ -308,6 +310,7 @@ namespace AlarmSystem
         private void lblConn_Click(object sender, EventArgs e)
             => m_Manager.ConnectivityEnabled = !m_Manager.ConnectivityEnabled;
 
-        private void btnClear_Click(object sender, EventArgs e) { txtLog.Text = ""; }
+        private void btnClear_Click(object sender, EventArgs e)
+            => txtLog.Text = "";
     }
 }
