@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO.Ports;
 using System.Text;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 using AlarmSystem.BLL;
 using AlarmSystem.DAL;
 using AlarmSystem.Entities;
@@ -12,6 +13,8 @@ namespace AlarmSystem
 {
     public partial class FrmAlarm : Form
     {
+        private const int MaxPoints = 50;
+
         private readonly BLL.AlarmSystem m_Manager;
         private bool m_ShowConsole = true;
         private bool m_EnableBuzzer;
@@ -27,6 +30,8 @@ namespace AlarmSystem
             foreach (var s in SerialPort.GetPortNames())
                 comboBoxSerialPorts.Items.Add(s);
 
+            InitializeChart();
+
             m_Manager = new BLL.AlarmSystem();
             m_Manager.Update += UpdateFromManger;
             m_Manager.ConnLost += ConnLostFromManager;
@@ -36,6 +41,139 @@ namespace AlarmSystem
 
             GetProfileFromManager();
             UpdateState();
+        }
+
+        private void InitializeChart()
+        {
+            chart1.ChartAreas.Clear();
+            chart1.Series.Clear();
+
+            // dist
+            var chAreaDist = chart1.ChartAreas.Add("dist");
+            chAreaDist.Position = new ElementPosition(0, 0, 100, 30);
+            chAreaDist.AxisX.Enabled = AxisEnabled.False;
+            chAreaDist.AxisY.Enabled = AxisEnabled.True;
+            chAreaDist.AxisY2.Enabled = AxisEnabled.True;
+            chAreaDist.AxisX.MajorGrid.Enabled = false;
+            chAreaDist.AxisY.MajorGrid.Enabled = false;
+            chAreaDist.AxisY2.MajorGrid.Enabled = false;
+            chAreaDist.CursorY.AxisType = AxisType.Secondary;
+            chAreaDist.CursorY.SelectionColor = Color.FromArgb(30, Color.Green);
+            chAreaDist.CursorY.SetSelectionPosition(0, BLL.AlarmSystem.MaxDist);
+
+            var chSeriesDistRaw = chart1.Series.Add("distRaw");
+            chSeriesDistRaw.ChartArea = "dist";
+            chSeriesDistRaw.ChartType = SeriesChartType.FastPoint;
+            chSeriesDistRaw.YAxisType = AxisType.Primary;
+
+            var chSeriesDist = chart1.Series.Add("dist");
+            chSeriesDist.ChartArea = "dist";
+            chSeriesDist.ChartType = SeriesChartType.FastLine;
+            chSeriesDist.YAxisType = AxisType.Secondary;
+            chSeriesDist.Color = Color.Black;
+            chSeriesDist.BorderWidth = 3;
+
+            // illum
+            var chAreaIllum = chart1.ChartAreas.Add("illum");
+            chAreaIllum.Position = new ElementPosition(0, 30, 100, 30);
+            chAreaIllum.AxisX.Enabled = AxisEnabled.False;
+            chAreaIllum.AxisY.Enabled = AxisEnabled.True;
+            chAreaIllum.AxisY2.Enabled = AxisEnabled.True;
+            chAreaIllum.AxisX.MajorGrid.Enabled = false;
+            chAreaIllum.AxisY.MajorGrid.Enabled = false;
+            chAreaIllum.AxisY2.MajorGrid.Enabled = false;
+            chAreaIllum.CursorY.SelectionColor = Color.FromArgb(30, Color.Green);
+            chAreaIllum.CursorY.SetSelectionPosition(0, BLL.AlarmSystem.MaxIllum);
+
+            var chSeriesIllum = chart1.Series.Add("illum");
+            chSeriesIllum.ChartArea = "illum";
+            chSeriesIllum.ChartType = SeriesChartType.FastLine;
+            chSeriesIllum.Color = Color.Black;
+            chSeriesIllum.BorderWidth = 3;
+
+            // acc
+            var chAreaAcc = chart1.ChartAreas.Add("acc");
+            chAreaAcc.Position = new ElementPosition(0, 60, 100, 40);
+            chAreaAcc.AxisX.Enabled = AxisEnabled.False;
+            chAreaAcc.AxisY.Enabled = AxisEnabled.True;
+            chAreaAcc.AxisY2.Enabled = AxisEnabled.True;
+            chAreaAcc.AxisX.MajorGrid.Enabled = false;
+            chAreaAcc.AxisY.MajorGrid.Enabled = false;
+            chAreaAcc.AxisY2.MajorGrid.Enabled = false;
+            chAreaAcc.CursorY.AxisType = AxisType.Secondary;
+            chAreaAcc.CursorY.SelectionColor = Color.FromArgb(30, Color.Green);
+            chAreaAcc.CursorY.SetSelectionPosition(-BLL.AlarmSystem.MaxAcc, BLL.AlarmSystem.MaxAcc);
+
+            var chSeriesAccRaw = chart1.Series.Add("accRaw");
+            chSeriesAccRaw.ChartArea = "acc";
+            chSeriesAccRaw.ChartType = SeriesChartType.FastPoint;
+            chSeriesAccRaw.YAxisType = AxisType.Primary;
+
+            var chSeriesAcc = chart1.Series.Add("acc");
+            chSeriesAcc.ChartArea = "acc";
+            chSeriesAcc.ChartType = SeriesChartType.FastLine;
+            chSeriesAcc.YAxisType = AxisType.Primary;
+
+            var chSeriesAccCuSum = chart1.Series.Add("accCuSum");
+            chSeriesAccCuSum.ChartArea = "acc";
+            chSeriesAccCuSum.ChartType = SeriesChartType.FastLine;
+            chSeriesAccCuSum.YAxisType = AxisType.Secondary;
+            chSeriesAccCuSum.Color = Color.Black;
+            chSeriesAccCuSum.BorderWidth = 3;
+        }
+
+        private static double InfTo(double value, int accuracy)
+            => Math.Sign(value) * Math.Ceiling(Math.Abs(value) * Math.Pow(10, accuracy)) * Math.Pow(10, -accuracy);
+
+        private void UpdateChartRange()
+        {
+            // dist
+            var chAreaDist = chart1.ChartAreas["dist"];
+
+            var chSeriesDistRaw = chart1.Series["distRaw"];
+            var sdrMax = chSeriesDistRaw.Points.FindMaxByValue()?.YValues[0];
+
+            var chSeriesDist = chart1.Series["dist"];
+            var sdMax = chSeriesDist.Points.FindMaxByValue()?.YValues[0];
+
+            chAreaDist.AxisY.Minimum = 0;
+            chAreaDist.AxisY.Maximum = InfTo(Math.Max(sdrMax ?? 0, BLL.AlarmSystem.MaxDist) + 10, -1);
+
+            chAreaDist.AxisY2.Minimum = 0;
+            chAreaDist.AxisY2.Maximum = InfTo(Math.Max(sdMax ?? 0, BLL.AlarmSystem.MaxDist) + 10, -1);
+
+            // illum
+            var chAreaIllum = chart1.ChartAreas["illum"];
+
+            var chSeriesIllum = chart1.Series["illum"];
+            var siMax = chSeriesIllum.Points.FindMaxByValue()?.YValues[0];
+
+            chAreaIllum.AxisY.Minimum = 0;
+            chAreaIllum.AxisY.Maximum = InfTo(Math.Max(siMax ?? 0, BLL.AlarmSystem.MaxIllum) + 2, 0);
+
+            chAreaIllum.AxisY2.Minimum = 0;
+            chAreaIllum.AxisY2.Maximum = InfTo(Math.Max(siMax ?? 0, BLL.AlarmSystem.MaxIllum) + 2, 0);
+
+            // acc
+            var chAreaAcc = chart1.ChartAreas["acc"];
+
+            var chSeriesAccRaw = chart1.Series["accRaw"];
+            var sarMin = chSeriesAccRaw.Points.FindMinByValue()?.YValues[0];
+            var sarMax = chSeriesAccRaw.Points.FindMaxByValue()?.YValues[0];
+
+            var chSeriesAcc = chart1.Series["acc"];
+            var saMin = chSeriesAcc.Points.FindMinByValue()?.YValues[0];
+            var saMax = chSeriesAcc.Points.FindMaxByValue()?.YValues[0];
+
+            var chSeriesAccCuSum = chart1.Series["accCuSum"];
+            var sacsMin = chSeriesAccCuSum.Points.FindMinByValue()?.YValues[0];
+            var sacsMax = chSeriesAccCuSum.Points.FindMaxByValue()?.YValues[0];
+
+            chAreaAcc.AxisY.Minimum = InfTo(Math.Min(sarMin ?? 0, saMin ?? 0) - 10, -1);
+            chAreaAcc.AxisY.Maximum = InfTo(Math.Max(sarMax ?? 0, saMax ?? 0) + 10, -1);
+
+            chAreaAcc.AxisY2.Minimum = InfTo(Math.Min(sacsMin ?? 0, -BLL.AlarmSystem.MaxAcc) - 10, -1);
+            chAreaAcc.AxisY2.Maximum = InfTo(Math.Max(sacsMax ?? 0, BLL.AlarmSystem.MaxAcc) + 10, -1);
         }
 
         private bool SetProfileToManager()
@@ -75,11 +213,19 @@ namespace AlarmSystem
             comboBoxParity.Text = profile.Parity.ToString();
         }
 
-        private void UpdateFromManger(Report report)
+        private void AppendSeries(string name, double data)
+        {
+            var series = chart1.Series[name];
+            while (series.Points.Count >= MaxPoints)
+                series.Points.RemoveAt(0);
+            series.Points.AddY(data);
+        }
+
+        private void UpdateFromManger(Report report, Report rawReport, double cusum)
         {
             if (InvokeRequired)
             {
-                Invoke(new Action(() => UpdateFromManger(report)));
+                Invoke(new Action(() => UpdateFromManger(report, rawReport, cusum)));
                 return;
             }
 
@@ -91,6 +237,14 @@ namespace AlarmSystem
 
             if (report == null)
                 return;
+
+            AppendSeries("distRaw", rawReport.Distance);
+            AppendSeries("dist", report.Distance);
+            AppendSeries("illum", report.Illuminance);
+            AppendSeries("accRaw", rawReport.Acceleration);
+            AppendSeries("acc", report.Acceleration);
+            AppendSeries("accCuSum", cusum);
+            UpdateChartRange();
 
             if (m_Manager.RealState.HasFlag(AlarmingState.Level1))
             {
@@ -258,8 +412,6 @@ namespace AlarmSystem
                 lblState.Text = "正常";
                 lblState.BackColor = Color.LawnGreen;
             }
-
-            tslState.Text = "安全状态：" + lblState.Text;
 
             btnToggleCom.Text = m_Manager.IsOpen ? "关闭串口" : "打开串口";
         }

@@ -18,7 +18,7 @@ namespace AlarmSystem.BLL
         Level4 = 0x08
     }
 
-    public delegate void UpdateEventHandler(Report report);
+    public delegate void UpdateEventHandler(Report report, Report rawReport, double cusum);
 
     public delegate void ConnLostEventHandler();
 
@@ -26,9 +26,9 @@ namespace AlarmSystem.BLL
 
     public class AlarmSystem
     {
-        private const int MaxDist = 50;
-        private const int MaxIllum = 1;
-        private const double MaxAcc = 40;
+        public const int MaxDist = 100;
+        public const int MaxIllum = 1;
+        public const double MaxAcc = 40;
 
         public event UpdateEventHandler Update;
         public event ConnLostEventHandler ConnLost;
@@ -70,7 +70,7 @@ namespace AlarmSystem.BLL
         private readonly Timer m_Watchdog;
 
         //private readonly ISmoother m_IllumSmoother;
-        private readonly IEventDetecter m_AccSmoother;
+        private readonly CuSumEventDetecter m_AccSmoother;
         private readonly ISmoother m_DistSmoother;
 
         public AlarmSystem()
@@ -198,7 +198,7 @@ namespace AlarmSystem.BLL
                 return;
             SendManagementPackage(ManagementPackageType.BuzzOff);
             State = AlarmingState.None;
-            Update?.Invoke(null);
+            Update?.Invoke(null, null, double.NaN);
         }
 
         public void SendManagementPackage(ManagementPackageType type)
@@ -225,7 +225,7 @@ namespace AlarmSystem.BLL
                     };
 
             CheckAlarm(report);
-            Update?.Invoke(report);
+            Update?.Invoke(report, rawReport, m_AccSmoother.Diviation);
             return true;
         }
 

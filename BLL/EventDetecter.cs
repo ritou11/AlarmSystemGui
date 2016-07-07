@@ -37,6 +37,8 @@ namespace AlarmSystem.BLL
     {
         public bool Occured { get; private set; }
 
+        public double Diviation { get; private set; }
+
         // ReSharper disable once MemberCanBePrivate.Global
         // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
         public double Criteria { get; set; }
@@ -49,22 +51,20 @@ namespace AlarmSystem.BLL
         {
             Criteria = criteria;
             Coefficient2 = coefficient2;
-            m_Diviation = 0;
+            Diviation = 0;
         }
-
-        private double m_Diviation;
 
         public override double Update(double newValue)
         {
             base.Update(newValue);
 
             if (!double.IsNaN(CurrentValue))
-                m_Diviation = Coefficient2 * m_Diviation + newValue - CurrentValue;
+                Diviation = Coefficient2 * Diviation + newValue - CurrentValue;
 
-            Occured = Math.Abs(m_Diviation) > Criteria;
+            Occured = Math.Abs(Diviation) > Criteria;
 
-            if (Occured)
-                m_Diviation = 0;
+            //if (Occured)
+            //    Diviation = 0;
 
             return CurrentValue;
         }
