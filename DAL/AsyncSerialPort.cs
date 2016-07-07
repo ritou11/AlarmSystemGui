@@ -42,7 +42,8 @@ namespace AlarmSystem.DAL
             m_TxThread.Start();
         }
 
-        public byte StartMark { get; set; }
+        // ReSharper disable once MemberCanBePrivate.Global
+        // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
         public int PackageLength { get; set; }
 
         private Profile m_TheProfile;

@@ -18,7 +18,7 @@ namespace AlarmSystem.BLL
         Level4 = 0x08
     }
 
-    public delegate void UpdateEventHandler(Report report);
+    public delegate void UpdateEventHandler(Report report, Report rawReport, double cusum);
 
     public delegate void ConnLostEventHandler();
 
@@ -26,9 +26,9 @@ namespace AlarmSystem.BLL
 
     public class AlarmSystem
     {
-        private const int MaxDist = 50;
-        private const int MaxIllum = 1;
-        private const double MaxAcc = 40;
+        public const int MaxDist = 100;
+        public const int MaxIllum = 1;
+        public const double MaxAcc = 40;
 
         public event UpdateEventHandler Update;
         public event ConnLostEventHandler ConnLost;
@@ -36,13 +36,17 @@ namespace AlarmSystem.BLL
         public event OpenPortEventHandler OpenPortResult;
         public event ClosePortEventHandler ClosePortResult;
 
+        // ReSharper disable once MemberCanBePrivate.Global
+        // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
         public TimeSpan DefaultTimeout { get; set; }
 
         private TimeSpan m_WatchDogTimeout;
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public TimeSpan WatchDogTimeout
         {
             get { return m_WatchDogTimeout; }
+            // ReSharper disable once UnusedMember.Global
             set
             {
                 m_WatchDogTimeout = value;
@@ -66,7 +70,7 @@ namespace AlarmSystem.BLL
         private readonly Timer m_Watchdog;
 
         //private readonly ISmoother m_IllumSmoother;
-        private readonly IEventDetecter m_AccSmoother;
+        private readonly CuSumEventDetecter m_AccSmoother;
         private readonly ISmoother m_DistSmoother;
 
         public AlarmSystem()
@@ -89,13 +93,13 @@ namespace AlarmSystem.BLL
                 var name = ports.Length == 0 ? "COM1" : ports[0];
                 TheProfile =
                     new Profile
-                    {
-                        Name = name,
-                        BaudRate = 115200,
-                        DataBits = 8,
-                        StopBits = StopBits.One,
-                        Parity = Parity.None
-                    };
+                        {
+                            Name = name,
+                            BaudRate = 115200,
+                            DataBits = 8,
+                            StopBits = StopBits.One,
+                            Parity = Parity.None
+                        };
                 ProfileKeeper.SaveProfile(TheProfile);
             }
 
@@ -110,10 +114,10 @@ namespace AlarmSystem.BLL
             m_Watchdog.Elapsed += Watchdog_Triggered;
 
             //m_IllumSmoother = new ExponentSmoother(0.2);
-            m_AccSmoother = new CuSumEventDetecter(0.5, MaxAcc);
+            m_AccSmoother = new CuSumEventDetecter(0.5, 0.9, MaxAcc);
             m_DistSmoother = new MinSmoother(5);
 
-            m_Port = new AsyncSerialPort(TheProfile, 12) { StartMark = 0x5a };
+            m_Port = new AsyncSerialPort(TheProfile, 12);
             m_Port.OpenPort += Port_Open;
             m_Port.ClosePort += Port_Close;
             m_Port.PackageArrived += Port_Package;
@@ -169,9 +173,7 @@ namespace AlarmSystem.BLL
                 RealState |= AlarmingState.Level3;
             m_Watchdog.Stop();
             if (ConnectivityEnabled)
-            {
                 m_Watchdog.Start();
-            }
 
             if (!(DistanceEnabled || IlluminanceEnabled || ShakingEnabled || ConnectivityEnabled))
                 State = AlarmingState.Unarmed;
@@ -196,7 +198,7 @@ namespace AlarmSystem.BLL
                 return;
             SendManagementPackage(ManagementPackageType.BuzzOff);
             State = AlarmingState.None;
-            Update?.Invoke(null);
+            Update?.Invoke(null, null, double.NaN);
         }
 
         public void SendManagementPackage(ManagementPackageType type)
@@ -212,18 +214,18 @@ namespace AlarmSystem.BLL
 
             var report =
                 new Report
-                {
-                    Illuminance = rawReport.Illuminance,
-                    //Illuminance = m_IllumSmoother.Update(rawReport.Illuminance),
-                    Acceleration = m_AccSmoother.Update(rawReport.Acceleration),
-                    Distance = m_DistSmoother.Update(rawReport.Distance),
-                    IsBuzzerOn = rawReport.IsBuzzerOn,
-                    RawBytes = rawReport.RawBytes,
-                    TimeStamp = rawReport.TimeStamp
-                };
+                    {
+                        Illuminance = rawReport.Illuminance,
+                        //Illuminance = m_IllumSmoother.Update(rawReport.Illuminance),
+                        Acceleration = m_AccSmoother.Update(rawReport.Acceleration),
+                        Distance = m_DistSmoother.Update(rawReport.Distance),
+                        IsBuzzerOn = rawReport.IsBuzzerOn,
+                        RawBytes = rawReport.RawBytes,
+                        TimeStamp = rawReport.TimeStamp
+                    };
 
             CheckAlarm(report);
-            Update?.Invoke(report);
+            Update?.Invoke(report, rawReport, m_AccSmoother.Diviation);
             return true;
         }
 
