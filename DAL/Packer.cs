@@ -52,6 +52,7 @@ namespace AlarmSystem.DAL
                     };
         }
 
+        // ReSharper disable once UnusedParameter.Global
         public static byte[] GenerateManagementPackage(ManagementPackageType type, params object[] param)
         {
             switch (type)

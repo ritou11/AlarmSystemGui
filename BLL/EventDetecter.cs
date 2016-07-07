@@ -37,11 +37,18 @@ namespace AlarmSystem.BLL
     {
         public bool Occured { get; private set; }
 
+        // ReSharper disable once MemberCanBePrivate.Global
+        // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
         public double Criteria { get; set; }
 
-        public CuSumEventDetecter(double coefficient, double criteria) : base(coefficient)
+        // ReSharper disable once MemberCanBePrivate.Global
+        // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
+        public double Coefficient2 { get; set; }
+
+        public CuSumEventDetecter(double coefficient, double coefficient2, double criteria) : base(coefficient)
         {
             Criteria = criteria;
+            Coefficient2 = coefficient2;
             m_Diviation = 0;
         }
 
@@ -52,7 +59,7 @@ namespace AlarmSystem.BLL
             base.Update(newValue);
 
             if (!double.IsNaN(CurrentValue))
-                m_Diviation = 0.9 * m_Diviation + newValue - CurrentValue;
+                m_Diviation = Coefficient2 * m_Diviation + newValue - CurrentValue;
 
             Occured = Math.Abs(m_Diviation) > Criteria;
 

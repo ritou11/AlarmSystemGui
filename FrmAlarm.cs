@@ -14,7 +14,7 @@ namespace AlarmSystem
     {
         private readonly BLL.AlarmSystem m_Manager;
         private bool m_ShowConsole = true;
-        private bool m_EnableBuzzer = false;
+        private bool m_EnableBuzzer;
         private bool m_ActBuzzer = true;
 
         public FrmAlarm()
@@ -44,13 +44,13 @@ namespace AlarmSystem
             {
                 var profile =
                     new Profile
-                    {
-                        Name = comboBoxSerialPorts.Text,
-                        BaudRate = Convert.ToInt32(comboBoxBaudRate.Text),
-                        DataBits = Convert.ToInt32(comboBoxWordLength.Text),
-                        StopBits = (StopBits)Enum.Parse(typeof(StopBits), comboBoxStopBits.Text),
-                        Parity = (Parity)Enum.Parse(typeof(Parity), comboBoxParity.Text)
-                    };
+                        {
+                            Name = comboBoxSerialPorts.Text,
+                            BaudRate = Convert.ToInt32(comboBoxBaudRate.Text),
+                            DataBits = Convert.ToInt32(comboBoxWordLength.Text),
+                            StopBits = (StopBits)Enum.Parse(typeof(StopBits), comboBoxStopBits.Text),
+                            Parity = (Parity)Enum.Parse(typeof(Parity), comboBoxParity.Text)
+                        };
                 m_Manager.TheProfile = profile;
                 return true;
             }
@@ -294,15 +294,16 @@ namespace AlarmSystem
             m_EnableBuzzer = !m_EnableBuzzer;
             btnBuzz.Text = m_EnableBuzzer ? "禁用蜂鸣器" : "启用蜂鸣器";
             btnActBuzz.Enabled = m_EnableBuzzer;
-            if (m_ActBuzzer && !m_EnableBuzzer) m_Manager.SendManagementPackage(ManagementPackageType.BuzzOff);
+            if (m_ActBuzzer && !m_EnableBuzzer)
+                m_Manager.SendManagementPackage(ManagementPackageType.BuzzOff);
         }
 
         private void btnActBuzz_Click(object sender, EventArgs e)
-        {
-            if (m_ActBuzzer)
-                m_Manager.SendManagementPackage(ManagementPackageType.BuzzOff);
-            else m_Manager.SendManagementPackage(ManagementPackageType.BuzzOn);
-        }
+            =>
+                m_Manager.SendManagementPackage(
+                                                m_ActBuzzer
+                                                    ? ManagementPackageType.BuzzOff
+                                                    : ManagementPackageType.BuzzOn);
 
 
         private void btnIgnore_Click(object sender, EventArgs e)

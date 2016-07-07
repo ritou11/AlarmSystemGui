@@ -5,7 +5,9 @@ namespace AlarmSystem.BLL
 {
     public interface ISmoother
     {
+        // ReSharper disable UnusedMemberInSuper.Global
         double CurrentValue { get; }
+        // ReSharper restore UnusedMemberInSuper.Global
 
         double Update(double newValue);
     }
@@ -21,28 +23,31 @@ namespace AlarmSystem.BLL
 
     public abstract class QueueSmoother : Smoother
     {
+        // ReSharper disable once MemberCanBePrivate.Global
+        // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
         public int MaxItem { get; set; }
 
-        public QueueSmoother(int maxItem = 5) { MaxItem = maxItem; }
+        // ReSharper disable once PublicConstructorInAbstractClass
+        public QueueSmoother(int maxItem) { MaxItem = maxItem; }
 
-        protected readonly Queue<double> m_Queue = new Queue<double>();
+        protected readonly Queue<double> Queue = new Queue<double>();
 
-        public abstract void CalculateCurrentValue();
+        protected abstract void CalculateCurrentValue();
 
         public override double Update(double newValue)
         {
-            m_Queue.Enqueue(newValue);
-            while (m_Queue.Count > MaxItem)
-                m_Queue.Dequeue();
+            Queue.Enqueue(newValue);
+            while (Queue.Count > MaxItem)
+                Queue.Dequeue();
 
             CalculateCurrentValue();
             return CurrentValue;
         }
     }
 
-    public class MedianSmoother : QueueSmoother
+    /* public class MedianSmoother : QueueSmoother
     {
-        public MedianSmoother(int maxItem = 5) : base(maxItem) { }
+        public MedianSmoother(int maxItem) : base(maxItem) { }
 
         public override void CalculateCurrentValue()
         {
@@ -53,20 +58,23 @@ namespace AlarmSystem.BLL
             var median = (size % 2 != 0) ? sourceNumbers[mid] : (sourceNumbers[mid] + sourceNumbers[mid - 1]) / 2;
             CurrentValue = median;
         }
-    }
+    } */
 
-    public class MovingAverageSmoother : QueueSmoother
+    /* public class MovingAverageSmoother : QueueSmoother
     {
         public MovingAverageSmoother(int maxItem = 5) : base(maxItem) { }
 
         public override void CalculateCurrentValue() => CurrentValue = m_Queue.Average();
-    }
+    } */
 
     public class ExponentSmoother : Smoother
     {
+        // ReSharper disable once MemberCanBePrivate.Global
+        // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
         public double Coefficient { get; set; }
 
-        public ExponentSmoother(double coeficient = 0.7) { Coefficient = coeficient; }
+        // ReSharper disable once MemberCanBeProtected.Global
+        public ExponentSmoother(double coeficient) { Coefficient = coeficient; }
 
         public override double Update(double newValue)
         {
@@ -78,9 +86,9 @@ namespace AlarmSystem.BLL
 
     public class MinSmoother : QueueSmoother
     {
-        public MinSmoother(int maxItem = 5) : base(maxItem) { }
+        public MinSmoother(int maxItem) : base(maxItem) { }
 
-        public override void CalculateCurrentValue()
-            => CurrentValue = m_Queue.Min();
+        protected override void CalculateCurrentValue()
+            => CurrentValue = Queue.Min();
     }
 }
